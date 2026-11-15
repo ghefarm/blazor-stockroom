@@ -1,0 +1,135 @@
+@page "/suppliers"
+@using Stockroom.Core.Sample
+@inject NavigationManager Navigation
+
+<PageTitle>Suppliers</PageTitle>
+
+<h1>Suppliers</h1>
+
+@if (notice is not null)
+{
+    <Banner Notice="@notice" />
+}
+
+@if (toDelete is not null)
+{
+    <form method="post" @formname="delete" data-enhance
+          @onsubmit="DeleteSupplier"
+          class="border border-danger rounded p-3 mb-3">
+        <AntiforgeryToken />
+        <p>
+            Delete <strong>@toDelete.Name</strong>?
+            You cannot undo this.
+        </p>
+        <div class="form-check mb-3">
+            <input id="confirm" type="checkbox" required
+                   name="Confirmed" value="true"
+                   class="form-check-input" />
+            <label for="confirm" class="form-check-label">
+                Yes, delete this supplier
+            </label>
+        </div>
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a href="suppliers" class="btn btn-link">Cancel</a>
+    </form>
+}
+
+<p>
+    <a href="suppliers/new" class="btn btn-primary">New supplier</a>
+    <a href="suppliers/batch" class="btn btn-link">Add several</a>
+</p>
+
+<form method="post" action="suppliers" @formname="deactivate"
+      data-enhance @onsubmit="DeactivateSelected">
+    <AntiforgeryToken />
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var supplier in suppliers)
+            {
+                <SupplierRow Supplier="@supplier" />
+            }
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-outline-secondary">
+        Set selected to inactive
+    </button>
+</form>
+
+@code {
+    private IReadOnlyList<Supplier> suppliers = [];
+    private Supplier? toDelete;
+    private Notice? notice;
+
+    [SupplyParameterFromQuery(Name = "done")]
+    private string? Done { get; set; }
+
+    [SupplyParameterFromQuery(Name = "delete")]
+    private int? DeleteId { get; set; }
+
+    [SupplyParameterFromForm(FormName = "delete")]
+    private bool Confirmed { get; set; }
+
+    [SupplyParameterFromForm(FormName = "deactivate")]
+    private int[]? Selected { get; set; }
+
+    protected override void OnInitialized()
+    {
+        suppliers = SampleSuppliers.ListAll();
+        notice = SupplierNotices.Find(Done);
+
+        if (DeleteId is int id)
+        {
+            toDelete = SampleSuppliers.FindById(id);
+
+            if (toDelete is null)
+            {
+                Navigation.NavigateTo("suppliers?done=missing");
+                return;
+            }
+        }
+    }
+
+    private void DeleteSupplier()
+    {
+        // Blazor calls this only while the page renders the form,
+        // and the page renders it only when toDelete is set.
+        var id = toDelete!.Id;
+
+        // The browser insists on the checkbox. A hand-made POST does
+        // not, so the server checks again.
+        if (!Confirmed)
+        {
+            Navigation.NavigateTo($"suppliers?delete={id}");
+            return;
+        }
+
+        SampleSuppliers.Remove(id);
+        Navigation.NavigateTo("suppliers?done=deleted");
+    }
+
+    private void DeactivateSelected()
+    {
+        // No ticked box means no value in the POST, and the binder
+        // sets the property to null.
+        var ids = Selected ?? [];
+
+        if (ids.Length == 0)
+        {
+            notice = new(NoticeKind.Error,
+                "Select at least one supplier.");
+            return;
+        }
+
+        SampleSuppliers.Deactivate(ids);
+        Navigation.NavigateTo("suppliers?done=deactivated");
+    }
+}

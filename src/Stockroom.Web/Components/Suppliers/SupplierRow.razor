@@ -1,0 +1,21 @@
+<tr class="@RowClass">
+    <td>
+        @* No form of its own: the list wraps all rows in one form. *@
+        <input type="checkbox" name="Selected"
+               value="@Supplier.Id" aria-label="@SelectLabel" />
+    </td>
+    <td><a href="suppliers/@Supplier.Id/edit">@Supplier.Name</a></td>
+    <td>@Supplier.Email</td>
+    <td>@(Supplier.IsActive ? "Active" : "Inactive")</td>
+    <td><a href="suppliers?delete=@Supplier.Id">Delete</a></td>
+</tr>
+
+@code {
+    [Parameter, EditorRequired]
+    public Supplier Supplier { get; set; } = default!;
+
+    private string? RowClass =>
+        Supplier.IsActive ? null : "text-muted";
+
+    private string SelectLabel => $"Select {Supplier.Name}";
+}

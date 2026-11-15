@@ -6,6 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Lets EditForm validate the rows of a list, not only the top level.
+builder.Services.AddValidation();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

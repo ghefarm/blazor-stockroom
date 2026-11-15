@@ -1,0 +1,92 @@
+@page "/suppliers/new"
+@page "/suppliers/{Id:int}/edit"
+@using Stockroom.Core.Sample
+@inject NavigationManager Navigation
+
+<PageTitle>@Title</PageTitle>
+
+<h1>@Title</h1>
+
+@if (Input is not null)
+{
+    <EditForm Model="Input" FormName="supplier" Enhance
+              OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <InputText id="name" class="form-control"
+                       @bind-Value="Input.Name" />
+            <ValidationMessage For="() => Input.Name" />
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <InputText id="email" class="form-control"
+                       @bind-Value="Input.Email" />
+            <ValidationMessage For="() => Input.Email" />
+        </div>
+
+        <div class="form-check mb-3">
+            <InputCheckbox id="active" class="form-check-input"
+                           @bind-Value="Input.IsActive" />
+            <label for="active" class="form-check-label">
+                Active
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="suppliers" class="btn btn-link">Cancel</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    [SupplyParameterFromForm(FormName = "supplier")]
+    private SupplierInput? Input { get; set; }
+
+    private string Title =>
+        Id is null ? "New supplier" : "Edit supplier";
+
+    protected override void OnInitialized()
+    {
+        if (Id is null)
+        {
+            Input ??= new();
+            return;
+        }
+
+        var supplier = SampleSuppliers.FindById(Id.Value);
+
+        if (supplier is null)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        // Fill the form only on GET. On a POST, Input already holds
+        // what the user typed.
+        Input ??= SupplierInput.FromSupplier(supplier);
+    }
+
+    private void Save()
+    {
+        var supplier = new Supplier { Id = Id ?? 0 };
+        Input!.CopyTo(supplier);
+
+        if (Id is null)
+        {
+            SampleSuppliers.Add(supplier);
+            Navigation.NavigateTo("suppliers?done=created");
+            return;
+        }
+
+        var done = SampleSuppliers.Update(supplier)
+            ? "updated"
+            : "missing";
+        Navigation.NavigateTo($"suppliers?done={done}");
+    }
+}

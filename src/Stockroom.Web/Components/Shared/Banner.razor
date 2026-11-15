@@ -1,0 +1,12 @@
+<div class="alert @CssClass" role="status">@Notice.Text</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Notice Notice { get; set; } = default!;
+
+    private string CssClass => Notice.Kind switch
+    {
+        NoticeKind.Error => "alert-danger",
+        _ => "alert-success",
+    };
+}

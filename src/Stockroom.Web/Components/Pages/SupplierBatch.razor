@@ -1,0 +1,78 @@
+@page "/suppliers/batch"
+@using Stockroom.Core.Sample
+@inject NavigationManager Navigation
+
+<PageTitle>Add several suppliers</PageTitle>
+
+<h1>Add several suppliers</h1>
+
+<EditForm Model="Input" FormName="batch" Enhance
+          OnValidSubmit="Save">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (var index = 0; index < Input!.Rows.Count; index++)
+            {
+                // Each lambda below needs its own copy of the index.
+                var i = index;
+                <tr>
+                    <td>
+                        <InputText class="form-control"
+                            aria-label="@($"Name {i + 1}")"
+                            @bind-Value="Input.Rows[i].Name" />
+                        <ValidationMessage
+                            For="() => Input.Rows[i].Name" />
+                    </td>
+                    <td>
+                        <InputText class="form-control"
+                            aria-label="@($"Email {i + 1}")"
+                            @bind-Value="Input.Rows[i].Email" />
+                        <ValidationMessage
+                            For="() => Input.Rows[i].Email" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-primary">
+        Add suppliers
+    </button>
+    <a href="suppliers" class="btn btn-link">Cancel</a>
+</EditForm>
+
+@code {
+    private const int RowCount = 3;
+
+    [SupplyParameterFromForm(FormName = "batch")]
+    private SupplierBatchInput? Input { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Input ??= SupplierBatchInput.Create(RowCount);
+    }
+
+    private void Save()
+    {
+        foreach (var row in Input!.Rows)
+        {
+            var supplier = new Supplier();
+            row.CopyTo(supplier);
+
+            // The rows have no Active box. A new supplier from this
+            // page always starts active.
+            supplier.IsActive = true;
+            SampleSuppliers.Add(supplier);
+        }
+
+        Navigation.NavigateTo("suppliers?done=added");
+    }
+}
