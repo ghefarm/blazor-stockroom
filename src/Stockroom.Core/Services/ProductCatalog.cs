@@ -1,22 +1,40 @@
+using Microsoft.EntityFrameworkCore;
+using Stockroom.Core.Data;
 using Stockroom.Core.Entities;
-using Stockroom.Core.Sample;
 
 namespace Stockroom.Core.Services;
 
-// The methods are async already, so the pages do not change when
-// the products come from a database.
-public class ProductCatalog
+public class ProductCatalog(
+    IDbContextFactory<StockroomDbContext> factory)
 {
-    public Task<IReadOnlyList<Product>> GetAllAsync() =>
-        Task.FromResult(SampleProducts.All);
+    public async Task<IReadOnlyList<Product>> GetAllAsync()
+    {
+        await using var db = await factory.CreateDbContextAsync();
 
-    public Task<Product?> FindByIdAsync(int id) =>
-        Task.FromResult(SampleProducts.FindById(id));
+        // Without ORDER BY, SQL promises no order at all.
+        return await db.Products
+            .OrderBy(p => p.Id)
+            .ToListAsync();
+    }
 
-    public Task<bool> ChangeStockQuantityAsync(
+    public async Task<Product?> FindByIdAsync(int id)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        return await db.Products.FindAsync(id);
+    }
+
+    public async Task<bool> ChangeStockQuantityAsync(
         int id, int quantity)
     {
-        var found = SampleProducts.SetStockQuantity(id, quantity);
-        return Task.FromResult(found);
+        await using var db = await factory.CreateDbContextAsync();
+        var product = await db.Products.FindAsync(id);
+        if (product is null)
+        {
+            return false;
+        }
+
+        product.StockQuantity = quantity;
+        await db.SaveChangesAsync();
+        return true;
     }
 }

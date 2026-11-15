@@ -3,4 +3,7 @@
     <Project Path="src/Stockroom.Core/Stockroom.Core.csproj" />
     <Project Path="src/Stockroom.Web/Stockroom.Web.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Stockroom.Core.Tests/Stockroom.Core.Tests.csproj" />
+  </Folder>
 </Solution>

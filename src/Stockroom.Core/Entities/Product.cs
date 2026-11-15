@@ -7,5 +7,8 @@ public class Product
     public string Name { get; set; } = "";
     public long PriceCents { get; set; }
     public int StockQuantity { get; set; }
-    public bool IsActive { get; set; }
+
+    // The same value as the database default, so C# and the
+    // database agree on what a new product is.
+    public bool IsActive { get; set; } = true;
 }

@@ -1,66 +1,101 @@
+using Microsoft.EntityFrameworkCore;
+using Stockroom.Core.Data;
 using Stockroom.Core.Entities;
-using Stockroom.Core.Sample;
 
 namespace Stockroom.Core.Services;
 
 // Every page that reads or changes suppliers comes through here, so
 // a rule about suppliers is written once and can be tested alone.
-public class SupplierDirectory
+public class SupplierDirectory(
+    IDbContextFactory<StockroomDbContext> factory)
 {
-    public Task<IReadOnlyList<Supplier>> GetAllAsync() =>
-        Task.FromResult(SampleSuppliers.ListAll());
+    public async Task<IReadOnlyList<Supplier>> GetAllAsync()
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        return await db.Suppliers
+            .OrderBy(s => s.Name)
+            .ToListAsync();
+    }
 
-    public Task<Supplier?> FindByIdAsync(int id) =>
-        Task.FromResult(SampleSuppliers.FindById(id));
+    public async Task<Supplier?> FindByIdAsync(int id)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        return await db.Suppliers.FindAsync(id);
+    }
 
     public Task<SupplierChangeResult> AddAsync(Supplier supplier) =>
         AddAllAsync([supplier]);
 
-    public Task<SupplierChangeResult> AddAllAsync(
+    public async Task<SupplierChangeResult> AddAllAsync(
         IReadOnlyList<Supplier> suppliers)
     {
+        await using var db = await factory.CreateDbContextAsync();
+        string[] names = [.. suppliers.Select(s => s.Name)];
+
         // People choose a supplier by name, so a name must be unique.
-        // A batch with one taken name adds nothing at all.
-        var names = suppliers.Select(s => s.Name).ToList();
-        if (names.Distinct().Count() < names.Count
-            || names.Any(name => IsNameTaken(name, exceptId: 0)))
+        // The unique index on the name is the safety net below this.
+        if (names.Distinct().Count() < names.Length
+            || await db.Suppliers.AnyAsync(
+                s => names.Contains(s.Name)))
         {
-            return Task.FromResult(SupplierChangeResult.NameTaken);
+            return SupplierChangeResult.NameTaken;
         }
 
-        foreach (var supplier in suppliers)
-        {
-            SampleSuppliers.Add(supplier);
-        }
-
-        return Task.FromResult(SupplierChangeResult.Done);
+        // One save, so a batch is stored completely or not at all.
+        db.Suppliers.AddRange(suppliers);
+        await db.SaveChangesAsync();
+        return SupplierChangeResult.Done;
     }
 
-    public Task<SupplierChangeResult> UpdateAsync(Supplier supplier)
+    public async Task<SupplierChangeResult> UpdateAsync(
+        Supplier supplier)
     {
-        if (IsNameTaken(supplier.Name, exceptId: supplier.Id))
+        await using var db = await factory.CreateDbContextAsync();
+        if (await db.Suppliers.AnyAsync(
+            s => s.Name == supplier.Name && s.Id != supplier.Id))
         {
-            return Task.FromResult(SupplierChangeResult.NameTaken);
+            return SupplierChangeResult.NameTaken;
         }
 
-        var found = SampleSuppliers.Update(supplier);
-        return Task.FromResult(found
-            ? SupplierChangeResult.Done
-            : SupplierChangeResult.NotFound);
+        var stored = await db.Suppliers.FindAsync(supplier.Id);
+        if (stored is null)
+        {
+            return SupplierChangeResult.NotFound;
+        }
+
+        stored.Name = supplier.Name;
+        stored.Email = supplier.Email;
+        stored.IsActive = supplier.IsActive;
+        await db.SaveChangesAsync();
+        return SupplierChangeResult.Done;
     }
 
-    public Task<SupplierChangeResult> DeleteAsync(int id)
+    public async Task<SupplierChangeResult> DeleteAsync(int id)
     {
-        var found = SampleSuppliers.Remove(id);
-        return Task.FromResult(found
-            ? SupplierChangeResult.Done
-            : SupplierChangeResult.NotFound);
+        await using var db = await factory.CreateDbContextAsync();
+        var supplier = await db.Suppliers.FindAsync(id);
+        if (supplier is null)
+        {
+            return SupplierChangeResult.NotFound;
+        }
+
+        db.Suppliers.Remove(supplier);
+        await db.SaveChangesAsync();
+        return SupplierChangeResult.Done;
     }
 
-    public Task<int> DeactivateAsync(IReadOnlyCollection<int> ids) =>
-        Task.FromResult(SampleSuppliers.Deactivate(ids));
+    public async Task<int> DeactivateAsync(IReadOnlyCollection<int> ids)
+    {
+        await using var db = await factory.CreateDbContextAsync();
+        var active = await db.Suppliers
+            .Where(s => ids.Contains(s.Id) && s.IsActive)
+            .ToListAsync();
+        foreach (var supplier in active)
+        {
+            supplier.IsActive = false;
+        }
 
-    private static bool IsNameTaken(string name, int exceptId) =>
-        SampleSuppliers.ListAll()
-            .Any(s => s.Name == name && s.Id != exceptId);
+        await db.SaveChangesAsync();
+        return active.Count;
+    }
 }
