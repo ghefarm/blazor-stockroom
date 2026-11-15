@@ -1,7 +1,7 @@
 .shelf-label {
     border: 2px solid black;
     width: 20rem;
-    padding: 1rem;
+    padding: var(--space-4);
 }
 
 .sku {
@@ -11,5 +11,19 @@
 
 .price {
     font-size: 1.5rem;
-    margin-top: 0.5rem;
+    margin-top: var(--space-2);
+}
+
+.print-hint {
+    display: block;
+    margin-top: var(--space-4);
+    color: var(--color-muted);
+}
+
+/* @media adds no specificity. This rule wins only because it comes
+   after the rule above. */
+@media print {
+    .print-hint {
+        display: none;
+    }
 }

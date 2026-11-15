@@ -1,0 +1,4 @@
+/* The width of the form belongs to this page, not to the frame. */
+.supplier-form {
+    max-width: 36rem;
+}

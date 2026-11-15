@@ -9,36 +9,50 @@
 
 @if (Input is not null)
 {
-    <EditForm Model="Input" FormName="supplier" Enhance
-              OnValidSubmit="Save">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    @* EditForm renders the <form> itself, so a class on it gets no
+       scope attribute of this page. Our own wrapper does. *@
+    <div class="supplier-form">
+        <EditForm Model="Input" FormName="supplier" Enhance
+                  OnValidSubmit="Save">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-        <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <InputText id="name" class="form-control"
-                       @bind-Value="Input.Name" />
-            <ValidationMessage For="() => Input.Name" />
-        </div>
+            <FormCard>
+                <ChildContent>
+                    <div class="field">
+                        <label for="name">Name</label>
+                        <InputText id="name" class="form-control"
+                                   @bind-Value="Input.Name" />
+                        <ValidationMessage For="() => Input.Name" />
+                    </div>
 
-        <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <InputText id="email" class="form-control"
-                       @bind-Value="Input.Email" />
-            <ValidationMessage For="() => Input.Email" />
-        </div>
+                    <div class="field">
+                        <label for="email">Email</label>
+                        <InputText id="email" class="form-control"
+                                   @bind-Value="Input.Email" />
+                        <ValidationMessage For="() => Input.Email" />
+                    </div>
 
-        <div class="form-check mb-3">
-            <InputCheckbox id="active" class="form-check-input"
-                           @bind-Value="Input.IsActive" />
-            <label for="active" class="form-check-label">
-                Active
-            </label>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Save</button>
-        <a href="suppliers" class="btn btn-link">Cancel</a>
-    </EditForm>
+                    <div class="form-check">
+                        <InputCheckbox id="active"
+                                       class="form-check-input"
+                                       @bind-Value="Input.IsActive" />
+                        <label for="active" class="form-check-label">
+                            Active
+                        </label>
+                    </div>
+                </ChildContent>
+                <Actions>
+                    <button type="submit" class="btn btn-primary">
+                        Save
+                    </button>
+                    <a href="suppliers" class="btn btn-link">
+                        Cancel
+                    </a>
+                </Actions>
+            </FormCard>
+        </EditForm>
+    </div>
 }
 
 @code {

@@ -1,15 +1,40 @@
+/* Design tokens. Rules use these names instead of raw values, so a
+   change of color or spacing happens in one place. */
+:root {
+    --color-brand: #1b6ec2;
+    --color-brand-dark: #1861ac;
+    --color-link: #006bb7;
+    --color-border: #d6d5d5;
+    --color-muted: #6c757d;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-7: 32px;
+}
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 a, .btn-link {
-    color: #006bb7;
+    color: var(--color-link);
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: var(--color-brand);
+    border-color: var(--color-brand-dark);
+}
+
+/* Tiles side by side. Two pages use it, so it lives here and not
+   in the scoped CSS of one page. Space around it is the page's. */
+.tile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    gap: var(--space-4);
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {

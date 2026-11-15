@@ -11,6 +11,11 @@
     <Banner Notice="@notice" />
 }
 
+<div class="tile-grid mb-4">
+    <Tile Title="Suppliers">@suppliers.Count</Tile>
+    <Tile Title="Active">@activeCount</Tile>
+</div>
+
 @if (toDelete is not null)
 {
     <form method="post" @formname="delete" data-enhance
@@ -68,6 +73,7 @@
     private IReadOnlyList<Supplier> suppliers = [];
     private Supplier? toDelete;
     private Notice? notice;
+    private int activeCount;
 
     [SupplyParameterFromQuery(Name = "done")]
     private string? Done { get; set; }
@@ -84,6 +90,7 @@
     protected override void OnInitialized()
     {
         suppliers = SampleSuppliers.ListAll();
+        activeCount = suppliers.Count(s => s.IsActive);
         notice = SupplierNotices.Find(Done);
 
         if (DeleteId is int id)
