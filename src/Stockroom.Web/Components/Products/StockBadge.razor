@@ -1,0 +1,15 @@
+<span class="badge @CssClass">@StockText.Describe(Level)</span>
+
+@code {
+    [Parameter]
+    public int Quantity { get; set; }
+
+    private StockLevel Level => StockRules.DetermineLevel(Quantity);
+
+    private string CssClass => Level switch
+    {
+        StockLevel.Low => "text-bg-warning",
+        StockLevel.OutOfStock => "text-bg-danger",
+        _ => "text-bg-success",
+    };
+}

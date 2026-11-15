@@ -1,0 +1,19 @@
+<section class="tile">
+    <h2 class="tile-title">@Title</h2>
+    <div class="tile-body">@ChildContent</div>
+    @if (Footer is not null)
+    {
+        <div class="tile-footer">@Footer</div>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? Footer { get; set; }
+}

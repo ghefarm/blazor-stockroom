@@ -1,4 +1,5 @@
 @page "/"
+@using Stockroom.Core.Sample
 
 <PageTitle>Stockroom</PageTitle>
 
@@ -6,4 +7,27 @@
 
 <p>Stockroom keeps track of products, suppliers and orders.</p>
 
-<p>There is not much to see yet. We build it step by step.</p>
+<div class="tiles">
+    <Tile Title="Products">
+        <ChildContent>@products.Count</ChildContent>
+        <Footer><a href="products">Open the list</a></Footer>
+    </Tile>
+
+    @foreach (var level in levels)
+    {
+        <Tile Title="@StockText.Describe(level)">
+            @CountAt(level)
+        </Tile>
+    }
+</div>
+
+@code {
+    private readonly IReadOnlyList<Product> products =
+        SampleProducts.All;
+
+    private readonly StockLevel[] levels =
+        [StockLevel.Low, StockLevel.OutOfStock];
+
+    private int CountAt(StockLevel level) =>
+        StockRules.FilterByLevel(products, level).Count;
+}

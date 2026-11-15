@@ -1,0 +1,19 @@
+.tile {
+    border: 1px solid #d6d5d5;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.tile-title {
+    font-size: 1rem;
+    margin: 0 0 0.5rem;
+}
+
+.tile-body {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.tile-footer {
+    margin-top: 0.5rem;
+}

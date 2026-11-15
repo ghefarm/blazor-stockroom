@@ -1,0 +1,40 @@
+<div class="btn-group mb-3" role="group" aria-label="Stock filter">
+    @foreach (var tab in tabs)
+    {
+        <button type="button"
+                class="btn @ButtonClass(tab)"
+                aria-pressed="@FormatPressed(tab)"
+                @onclick="() => SelectAsync(tab)">
+            @StockText.DescribeFilter(tab)
+        </button>
+    }
+</div>
+
+@code {
+    private static readonly StockLevel?[] tabs =
+    [
+        null,
+        StockLevel.InStock,
+        StockLevel.Low,
+        StockLevel.OutOfStock,
+    ];
+
+    [Parameter]
+    public StockLevel? Selected { get; set; }
+
+    [Parameter]
+    public EventCallback<StockLevel?> OnSelect { get; set; }
+
+    private async Task SelectAsync(StockLevel? level)
+    {
+        await OnSelect.InvokeAsync(level);
+    }
+
+    private string ButtonClass(StockLevel? level) =>
+        level == Selected ? "btn-primary" : "btn-outline-primary";
+
+    // aria-pressed needs the text "true" or "false". A bool would
+    // render an empty attribute for true.
+    private string FormatPressed(StockLevel? level) =>
+        level == Selected ? "true" : "false";
+}

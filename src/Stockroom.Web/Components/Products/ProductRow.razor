@@ -1,0 +1,22 @@
+<tr class="@RowClass">
+    <td>@Product.Sku</td>
+    <td>
+        @Product.Name
+        @if (!Product.IsActive)
+        {
+            @* A plain space before @if would be dropped. *@
+            @(" ")<small>(inactive)</small>
+        }
+    </td>
+    <td class="text-end">@Money.Format(Product.PriceCents)</td>
+    <td class="text-end">@Product.StockQuantity</td>
+    <td><StockBadge Quantity="@Product.StockQuantity" /></td>
+</tr>
+
+@code {
+    [Parameter, EditorRequired]
+    public Product Product { get; set; } = default!;
+
+    private string? RowClass =>
+        Product.IsActive ? null : "text-muted";
+}

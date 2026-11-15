@@ -1,0 +1,38 @@
+@page "/products"
+@rendermode InteractiveServer
+@using Stockroom.Core.Sample
+
+<PageTitle>Products</PageTitle>
+
+<h1>Products</h1>
+
+<StockTabs Selected="@selected" OnSelect="@SelectLevel" />
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>SKU</th>
+            <th>Name</th>
+            <th class="text-end">Price</th>
+            <th class="text-end">Quantity</th>
+            <th>Stock</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in shown)
+        {
+            <ProductRow Product="@product" />
+        }
+    </tbody>
+</table>
+
+@code {
+    private StockLevel? selected;
+    private IReadOnlyList<Product> shown = SampleProducts.All;
+
+    private void SelectLevel(StockLevel? level)
+    {
+        selected = level;
+        shown = StockRules.FilterByLevel(SampleProducts.All, level);
+    }
+}
