@@ -7,34 +7,87 @@ namespace Stockroom.Core.Services;
 public class ProductCatalog(
     IDbContextFactory<StockroomDbContext> factory)
 {
-    public async Task<IReadOnlyList<Product>> GetAllAsync()
+    public async Task<IReadOnlyList<Product>> GetAllAsync(
+        CancellationToken ct = default)
     {
-        await using var db = await factory.CreateDbContextAsync();
+        await using var db = await factory.CreateDbContextAsync(ct);
 
         // Without ORDER BY, SQL promises no order at all.
         return await db.Products
+            .AsNoTracking()
             .OrderBy(p => p.Id)
-            .ToListAsync();
+            .ToListAsync(ct);
     }
 
-    public async Task<Product?> FindByIdAsync(int id)
+    public async Task<Product?> FindByIdAsync(
+        int id, CancellationToken ct = default)
     {
-        await using var db = await factory.CreateDbContextAsync();
-        return await db.Products.FindAsync(id);
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        // Not FindAsync: it always tracks the entity it returns.
+        return await db.Products
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id, ct);
+    }
+
+    public async Task<bool> ChangePriceAsync(
+        int id, long priceCents, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+        var product = await db.Products
+            .FirstOrDefaultAsync(p => p.Id == id, ct);
+        if (product is null)
+        {
+            return false;
+        }
+
+        product.PriceCents = priceCents;
+        await db.SaveChangesAsync(ct);
+        return true;
     }
 
     public async Task<bool> ChangeStockQuantityAsync(
-        int id, int quantity)
+        int id, int quantity, CancellationToken ct = default)
     {
-        await using var db = await factory.CreateDbContextAsync();
-        var product = await db.Products.FindAsync(id);
+        await using var db = await factory.CreateDbContextAsync(ct);
+        var product = await db.Products
+            .FirstOrDefaultAsync(p => p.Id == id, ct);
         if (product is null)
         {
             return false;
         }
 
         product.StockQuantity = quantity;
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(ct);
         return true;
+    }
+
+    public async Task<BatchResult> ChangePricesAsync(
+        IReadOnlyList<PriceChange> changes,
+        CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+        string[] skus = [.. changes.Select(c => c.Sku)];
+
+        // One query for the whole set, not one per row.
+        var bySku = await db.Products
+            .Where(p => skus.Contains(p.Sku))
+            .ToDictionaryAsync(p => p.Sku, ct);
+
+        var changed = 0;
+        foreach (var change in changes)
+        {
+            if (!bySku.TryGetValue(change.Sku, out var product)
+                || product.PriceCents == change.PriceCents)
+            {
+                continue;
+            }
+
+            product.PriceCents = change.PriceCents;
+            changed++;
+        }
+
+        await db.SaveChangesAsync(ct);
+        return new BatchResult(changed, changes.Count - changed);
     }
 }

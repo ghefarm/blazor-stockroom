@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using NSubstitute;
 using Stockroom.Core.Data;
 
 namespace Stockroom.Core.Tests;
@@ -36,6 +37,22 @@ public sealed class TestDatabase : IAsyncDisposable
     }
 
     public StockroomDbContext CreateContext() => new(options);
+
+    public IDbContextFactory<StockroomDbContext> CreateFactory()
+    {
+        // A new context on every call, as the real factory does.
+        var factory =
+            Substitute.For<IDbContextFactory<StockroomDbContext>>();
+        factory.CreateDbContextAsync(Arg.Any<CancellationToken>())
+            .Returns(_ => CreateContext());
+        return factory;
+    }
+
+    public async Task SeedAsync()
+    {
+        await using var db = CreateContext();
+        await SampleData.SeedAsync(db, true, default);
+    }
 
     public ValueTask DisposeAsync() => connection.DisposeAsync();
 }

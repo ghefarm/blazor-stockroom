@@ -61,6 +61,7 @@ public partial class Suppliers(
         var done = result switch
         {
             SupplierChangeResult.Done => "deleted",
+            SupplierChangeResult.HasOrders => "has-orders",
             _ => "missing",
         };
         navigation.NavigateTo($"suppliers?done={done}");

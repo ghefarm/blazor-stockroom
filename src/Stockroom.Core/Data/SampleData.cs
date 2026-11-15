@@ -32,6 +32,45 @@ public static class SampleData
         suppliers.AddRange(
             CreateSuppliers().Where(s => !names.Contains(s.Name)));
 
+        // Saved first, so the orders below can look up the keys.
+        await db.SaveChangesAsync(token);
+        await AddMissingOrdersAsync(db, token);
+    }
+
+    private static async Task AddMissingOrdersAsync(
+        DbContext db, CancellationToken token)
+    {
+        var orders = db.Set<PurchaseOrder>();
+        var numbers = await orders.Select(o => o.OrderNumber)
+            .ToListAsync(token);
+        var supplierIds = await db.Set<Supplier>()
+            .ToDictionaryAsync(s => s.Name, s => s.Id, token);
+        var productIds = await db.Set<Product>()
+            .ToDictionaryAsync(p => p.Sku, p => p.Id, token);
+
+        foreach (var sample in CreateOrders())
+        {
+            if (numbers.Contains(sample.Number))
+            {
+                continue;
+            }
+
+            orders.Add(new PurchaseOrder
+            {
+                OrderNumber = sample.Number,
+                SupplierId = supplierIds[sample.Supplier],
+                OrderedOn = sample.OrderedOn,
+                Status = sample.Status,
+                Lines = [.. sample.Lines.Select(l =>
+                    new PurchaseOrderLine
+                    {
+                        ProductId = productIds[l.Sku],
+                        Quantity = l.Quantity,
+                        UnitPriceCents = l.UnitPriceCents,
+                    })],
+            });
+        }
+
         await db.SaveChangesAsync(token);
     }
 
@@ -65,5 +104,25 @@ public static class SampleData
             Email = "hello@meadow-safety.example" },
         new() { Name = "Old Mill Labels",
             Email = "office@oldmill.example", IsActive = false },
+    ];
+
+    private sealed record SampleLine(
+        string Sku, int Quantity, long UnitPriceCents);
+
+    private sealed record SampleOrder(
+        string Number, string Supplier, DateOnly OrderedOn,
+        OrderStatus Status, SampleLine[] Lines);
+
+    private static List<SampleOrder> CreateOrders() =>
+    [
+        new("PO-1001", "Brightway Packaging", new(2026, 10, 5),
+            OrderStatus.Delivered,
+            [new("TP-050", 100, 180), new("BX-S", 500, 60)]),
+        new("PO-1002", "Kestrel Lifting Gear", new(2026, 10, 19),
+            OrderStatus.Open,
+            [new("SH-120", 10, 6500)]),
+        new("PO-1003", "Meadow Safety Supplies", new(2026, 11, 2),
+            OrderStatus.PartlyDelivered,
+            [new("GL-M", 50, 350)]),
     ];
 }

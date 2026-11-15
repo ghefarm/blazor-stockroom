@@ -14,6 +14,7 @@ builder.Services.AddValidation();
 builder.AddStockroomDatabase();
 builder.Services.AddScoped<ProductCatalog>();
 builder.Services.AddScoped<SupplierDirectory>();
+builder.Services.AddScoped<PurchaseOrderService>();
 
 var app = builder.Build();
 

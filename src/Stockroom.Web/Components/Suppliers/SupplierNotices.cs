@@ -14,6 +14,8 @@ public static class SupplierNotices
         "deleted" => Succeed("The supplier was deleted."),
         "deactivated" => Succeed("The suppliers are inactive."),
         "missing" => Fail("This supplier does not exist anymore."),
+        "has-orders" => Fail(
+            "This supplier has orders. Set it to inactive instead."),
         _ => null,
     };
 

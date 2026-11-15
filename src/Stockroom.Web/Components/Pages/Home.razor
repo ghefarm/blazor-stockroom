@@ -1,5 +1,6 @@
 @page "/"
 @inject ProductCatalog Catalog
+@inject PurchaseOrderService Orders
 
 <PageTitle>Stockroom</PageTitle>
 
@@ -22,17 +23,29 @@
             </Footer>
         </Tile>
     }
+
+    <Tile Title="Open orders">
+        <ChildContent>@openOrders</ChildContent>
+        <Footer><a href="orders">Show the orders</a></Footer>
+    </Tile>
 </div>
 
 @code {
     private IReadOnlyList<Product> products = [];
+    private int openOrders;
 
     private readonly StockLevel[] levels =
         [StockLevel.Low, StockLevel.OutOfStock];
 
     protected override async Task OnInitializedAsync()
     {
-        products = await Catalog.GetAllAsync();
+        // Two services, two contexts: the queries can overlap.
+        var productsTask = Catalog.GetAllAsync();
+        var openTask = Orders.CountOpenAsync();
+        await Task.WhenAll(productsTask, openTask);
+
+        products = productsTask.Result;
+        openOrders = openTask.Result;
     }
 
     private int CountAt(StockLevel level) =>

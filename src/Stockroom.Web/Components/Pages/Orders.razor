@@ -1,0 +1,41 @@
+@page "/orders"
+@inject PurchaseOrderService OrderService
+
+<PageTitle>Orders</PageTitle>
+
+<h1>Purchase orders</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Number</th>
+            <th>Supplier</th>
+            <th>Ordered on</th>
+            <th>Status</th>
+            <th class="text-end">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in orders)
+        {
+            <tr>
+                <td>@order.OrderNumber</td>
+                <td>@order.SupplierName</td>
+                <td>@order.OrderedOn.ToString("yyyy-MM-dd")</td>
+                <td>@order.Status</td>
+                <td class="text-end">
+                    @Money.Format(order.TotalCents)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private IReadOnlyList<OrderSummary> orders = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        orders = await OrderService.ListAsync();
+    }
+}

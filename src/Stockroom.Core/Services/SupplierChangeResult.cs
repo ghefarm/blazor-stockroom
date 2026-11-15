@@ -7,4 +7,5 @@ public enum SupplierChangeResult
     Done,
     NotFound,
     NameTaken,
+    HasOrders,
 }
