@@ -1,0 +1,5 @@
+root = true
+
+# One encoding for every file: UTF-8 without a byte order mark.
+[*]
+charset = utf-8
