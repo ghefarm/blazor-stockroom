@@ -1,0 +1,96 @@
+@page "/products/reorder"
+@rendermode InteractiveServer
+@using Stockroom.Core.Sample
+@inject ILogger<Reorder> Logger
+
+<PageTitle>Reorder</PageTitle>
+
+<h1>Reorder</h1>
+
+<div class="mb-3">
+    <label for="fill-up-to" class="form-label">
+        Fill every product up to
+    </label>
+    <input id="fill-up-to" type="number" min="1" max="500"
+           class="form-control w-auto" @ref="fillUpToInput"
+           @bind="fillUpTo" @bind:event="oninput"
+           @bind:after="CreatePlan" />
+</div>
+
+@if (lines.Count == 0)
+{
+    <p>Nothing to order for this target.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>SKU</th>
+                <th>Name</th>
+                <th class="text-end">In stock</th>
+                <th class="text-end">Order</th>
+                <th class="text-end">Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var line in lines)
+            {
+                <tr>
+                    <td>@line.Product.Sku</td>
+                    <td>@line.Product.Name</td>
+                    <td class="text-end">
+                        @line.Product.StockQuantity
+                    </td>
+                    <td class="text-end">@line.Quantity</td>
+                    <td class="text-end">
+                        @Money.Format(line.CostCents)
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="4">Total</th>
+                <th class="text-end">@Money.Format(totalCents)</th>
+            </tr>
+        </tfoot>
+    </table>
+}
+
+@code {
+    private const int DefaultTarget = 20;
+
+    private ElementReference fillUpToInput;
+    private int? fillUpTo = DefaultTarget;
+    private IReadOnlyList<ReorderLine> lines = [];
+    private long totalCents;
+
+    protected override void OnInitialized()
+    {
+        // Prerendering starts the page twice. The log shows both.
+        Logger.LogInformation(
+            "Reorder started: renderer {Renderer}, interactive {On}",
+            RendererInfo.Name, RendererInfo.IsInteractive);
+
+        CreatePlan();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Focus needs the browser. It exists only after the first
+        // interactive render, never during prerendering.
+        if (firstRender)
+        {
+            await fillUpToInput.FocusAsync();
+        }
+    }
+
+    private void CreatePlan()
+    {
+        // An empty box binds as null, which means "no target".
+        var target = Math.Clamp(fillUpTo ?? 0, 0, 500);
+        lines = ReorderPlanner.CreatePlan(SampleProducts.All, target);
+        totalCents = lines.Sum(l => l.CostCents);
+    }
+}

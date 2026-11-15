@@ -27,4 +27,19 @@ public static class SampleProducts
 
     public static Product? FindById(int id) =>
         All.FirstOrDefault(p => p.Id == id);
+
+    // The stock count page writes here until chapter 9. Writing one
+    // int is atomic, so a reader never sees half a value.
+    public static bool SetStockQuantity(int id, int quantity)
+    {
+        var product = FindById(id);
+
+        if (product is null)
+        {
+            return false;
+        }
+
+        product.StockQuantity = quantity;
+        return true;
+    }
 }

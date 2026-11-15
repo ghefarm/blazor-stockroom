@@ -1,0 +1,68 @@
+@page "/products/{Id:int}/count"
+@using Stockroom.Core.Sample
+@inject NavigationManager Navigation
+
+@if (product is not null && Input is not null)
+{
+    <PageTitle>Count @product.Sku</PageTitle>
+
+    <h1>Count @product.Name</h1>
+
+    <p>Stockroom expects @product.StockQuantity on the shelf.</p>
+
+    <EditForm Model="Input" FormName="count" Enhance
+              OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+
+        @* A text above the island, not a label around it. *@
+        <p class="form-label mb-1">Counted quantity</p>
+        <QuantityStepper @rendermode="InteractiveServer"
+                         Label="Counted quantity"
+                         FieldName="@CountedField"
+                         Start="@Input.CountedQuantity"
+                         Expected="@product.StockQuantity" />
+        <ValidationMessage For="() => Input.CountedQuantity" />
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">
+                Save count
+            </button>
+            <a href="products/@product.Id" class="btn btn-link">
+                Cancel
+            </a>
+        </div>
+    </EditForm>
+}
+
+@code {
+    // The name the form binder expects for Input.CountedQuantity.
+    private static readonly string CountedField =
+        $"{nameof(Input)}.{nameof(StockCountInput.CountedQuantity)}";
+
+    private Product? product;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm(FormName = "count")]
+    private StockCountInput? Input { get; set; }
+
+    protected override void OnInitialized()
+    {
+        product = SampleProducts.FindById(Id);
+
+        if (product is null)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        Input ??= new() { CountedQuantity = product.StockQuantity };
+    }
+
+    private void Save()
+    {
+        SampleProducts.SetStockQuantity(Id, Input!.CountedQuantity);
+        Navigation.NavigateTo($"products/{Id}?done=counted");
+    }
+}

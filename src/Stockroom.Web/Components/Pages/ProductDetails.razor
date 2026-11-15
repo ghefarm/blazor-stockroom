@@ -8,6 +8,11 @@
 
     <h1>@product.Name</h1>
 
+    @if (notice is not null)
+    {
+        <Banner Notice="@notice" />
+    }
+
     <dl class="row">
         <dt class="col-sm-3">SKU</dt>
         <dd class="col-sm-9">@product.Sku</dd>
@@ -23,16 +28,25 @@
     <p>
         <a href="products/@product.Id/label">Print a shelf label</a>
     </p>
+
+    <p>
+        <a href="products/@product.Id/count">Count the stock</a>
+    </p>
 }
 
 @code {
     private Product? product;
+    private Notice? notice;
 
     [Parameter]
     public int Id { get; set; }
 
+    [SupplyParameterFromQuery(Name = "done")]
+    private string? Done { get; set; }
+
     protected override void OnParametersSet()
     {
+        notice = ProductNotices.Find(Done);
         product = SampleProducts.FindById(Id);
 
         if (product is null)

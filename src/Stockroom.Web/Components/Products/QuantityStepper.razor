@@ -1,0 +1,61 @@
+<div class="d-flex align-items-center gap-2" role="group"
+     aria-label="@Label">
+    <button type="button" class="btn btn-outline-secondary"
+            disabled="@(!CanChange || value == 0)"
+            aria-label="One less" @onclick="Decrease">-</button>
+    <output class="fs-4">@value</output>
+    <button type="button" class="btn btn-outline-secondary"
+            disabled="@(!CanChange)"
+            aria-label="One more" @onclick="Increase">+</button>
+</div>
+<div class="form-text">@DescribeDifference()</div>
+
+@* The static form around this island posts this field. *@
+<input type="hidden" name="@FieldName" value="@value" />
+
+@code {
+    private int value;
+
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public string FieldName { get; set; } = "";
+
+    [Parameter]
+    public int Start { get; set; }
+
+    [Parameter]
+    public int Expected { get; set; }
+
+    // The buttons stay disabled in the prerendered HTML, because
+    // nothing could handle a click before the circuit is open.
+    private bool CanChange => RendererInfo.IsInteractive;
+
+    protected override void OnInitialized()
+    {
+        // The page cannot send a new value later, so the island
+        // keeps its own copy and changes only that.
+        value = Start;
+    }
+
+    private void Decrease()
+    {
+        if (value > 0)
+        {
+            value--;
+        }
+    }
+
+    private void Increase()
+    {
+        value++;
+    }
+
+    private string DescribeDifference() => (value - Expected) switch
+    {
+        0 => "Matches the stock in Stockroom.",
+        > 0 and var more => $"{more} more than Stockroom expects.",
+        var fewer => $"{-fewer} fewer than Stockroom expects.",
+    };
+}
