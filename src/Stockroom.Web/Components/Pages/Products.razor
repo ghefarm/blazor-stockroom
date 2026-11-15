@@ -1,6 +1,7 @@
 @page "/products"
 @rendermode InteractiveServer
 @using Stockroom.Core.Sample
+@inject NavigationManager Navigation
 
 <PageTitle>Products</PageTitle>
 
@@ -28,11 +29,39 @@
 
 @code {
     private StockLevel? selected;
-    private IReadOnlyList<Product> shown = SampleProducts.All;
+    private IReadOnlyList<Product> shown = [];
+    private bool loaded;
+
+    [SupplyParameterFromQuery(Name = StockQuery.Name)]
+    private string? Stock { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        var level = StockQuery.Parse(Stock);
+
+        // Reload only when the address asks for a different list.
+        if (loaded && level == selected)
+        {
+            return;
+        }
+
+        ApplyFilter(level);
+    }
 
     private void SelectLevel(StockLevel? level)
     {
+        // Set the field first, so OnParametersSet sees no change.
+        ApplyFilter(level);
+
+        var uri = Navigation.GetUriWithQueryParameter(
+            StockQuery.Name, StockQuery.Format(level));
+        Navigation.NavigateTo(uri, replace: true);
+    }
+
+    private void ApplyFilter(StockLevel? level)
+    {
         selected = level;
         shown = StockRules.FilterByLevel(SampleProducts.All, level);
+        loaded = true;
     }
 }

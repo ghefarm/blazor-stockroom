@@ -24,4 +24,7 @@ public static class SampleProducts
         new() { Id = 8, Sku = "LP-01", Name = "Label printer",
             PriceCents = 18900, StockQuantity = 0, IsActive = false },
     ];
+
+    public static Product? FindById(int id) =>
+        All.FirstOrDefault(p => p.Id == id);
 }

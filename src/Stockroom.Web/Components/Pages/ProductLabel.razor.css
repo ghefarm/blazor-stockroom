@@ -1,0 +1,15 @@
+.shelf-label {
+    border: 2px solid black;
+    width: 20rem;
+    padding: 1rem;
+}
+
+.sku {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.price {
+    font-size: 1.5rem;
+    margin-top: 0.5rem;
+}

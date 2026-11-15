@@ -1,0 +1,43 @@
+@page "/products/{Id:int}"
+@using Stockroom.Core.Sample
+@inject NavigationManager Navigation
+
+@if (product is not null)
+{
+    <PageTitle>@product.Name</PageTitle>
+
+    <h1>@product.Name</h1>
+
+    <dl class="row">
+        <dt class="col-sm-3">SKU</dt>
+        <dd class="col-sm-9">@product.Sku</dd>
+        <dt class="col-sm-3">Price</dt>
+        <dd class="col-sm-9">@Money.Format(product.PriceCents)</dd>
+        <dt class="col-sm-3">Stock</dt>
+        <dd class="col-sm-9">
+            @product.StockQuantity
+            <StockBadge Quantity="@product.StockQuantity" />
+        </dd>
+    </dl>
+
+    <p>
+        <a href="products/@product.Id/label">Print a shelf label</a>
+    </p>
+}
+
+@code {
+    private Product? product;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        product = SampleProducts.FindById(Id);
+
+        if (product is null)
+        {
+            Navigation.NotFound();
+        }
+    }
+}

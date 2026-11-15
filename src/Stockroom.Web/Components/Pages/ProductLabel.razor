@@ -1,0 +1,32 @@
+@page "/products/{Id:int}/label"
+@layout PrintLayout
+@using Stockroom.Core.Sample
+@inject NavigationManager Navigation
+
+@if (product is not null)
+{
+    <PageTitle>Label @product.Sku</PageTitle>
+
+    <div class="shelf-label">
+        <div class="sku">@product.Sku</div>
+        <div>@product.Name</div>
+        <div class="price">@Money.Format(product.PriceCents)</div>
+    </div>
+}
+
+@code {
+    private Product? product;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        product = SampleProducts.FindById(Id);
+
+        if (product is null)
+        {
+            Navigation.NotFound();
+        }
+    }
+}

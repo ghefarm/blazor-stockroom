@@ -16,7 +16,10 @@
     @foreach (var level in levels)
     {
         <Tile Title="@StockText.Describe(level)">
-            @CountAt(level)
+            <ChildContent>@CountAt(level)</ChildContent>
+            <Footer>
+                <a href="@StockQuery.CreateLink(level)">Show them</a>
+            </Footer>
         </Tile>
     }
 </div>
