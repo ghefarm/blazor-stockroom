@@ -1,0 +1,19 @@
+<p class="text-muted small">
+    Created @Format(Item.CreatedAt) by @Item.CreatedBy.
+    @if (Item.LastModifiedAt is { } changedAt)
+    {
+        <text>
+            Last changed @Format(changedAt)
+            by @Item.LastModifiedBy.
+        </text>
+    }
+</p>
+
+@code {
+    [Parameter, EditorRequired]
+    public IAuditable Item { get; set; } = default!;
+
+    // Stored in UTC. Chapter 15 shows it in the business time zone.
+    private static string Format(DateTime utc) =>
+        utc.ToString("yyyy-MM-dd HH:mm") + " UTC";
+}

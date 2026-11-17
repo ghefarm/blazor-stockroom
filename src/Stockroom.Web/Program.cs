@@ -13,6 +13,8 @@ builder.Services.AddRazorComponents()
 // Lets EditForm validate the rows of a list, not only the top level.
 builder.Services.AddValidation();
 
+builder.AddStockroomAuditing();
+
 builder.AddStockroomDatabase();
 builder.AddStockroomIdentity();
 builder.Services.AddScoped<ProductCatalog>();

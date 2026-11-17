@@ -3,6 +3,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using Stockroom.Core.Auditing;
 using Stockroom.Core.Data;
 using Stockroom.Core.Entities;
 using Stockroom.Core.Services;
@@ -25,12 +26,19 @@ public sealed class TestDatabase : IAsyncDisposable
             .Configure<IdentityOptions>(AccountRules.Apply)
             .BuildServiceProvider();
 
+    // Substitutes, so a test can choose the user and the time.
+    public ICurrentUser User { get; } =
+        Substitute.For<ICurrentUser>();
+    public TimeProvider Time { get; } =
+        Substitute.For<TimeProvider>();
+
     private TestDatabase(SqliteConnection connection)
     {
         this.connection = connection;
         options = new DbContextOptionsBuilder<StockroomDbContext>()
             .UseSqlite(connection)
             .UseApplicationServiceProvider(IdentityOptionsProvider)
+            .AddInterceptors(new AuditInterceptor(User, Time))
             .Options;
     }
 

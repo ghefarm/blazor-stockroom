@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Stockroom.Core.Auditing;
 using Stockroom.Core.Data;
 
 namespace Stockroom.Web.Hosting;
@@ -22,9 +23,11 @@ public static class DatabaseSetup
 
         var withSamples = builder.Environment.IsDevelopment();
         builder.Services.AddDbContextFactory<StockroomDbContext>(
-            options =>
+            (services, options) =>
             {
-                options.UseSqlite(connection.ToString());
+                options.UseSqlite(connection.ToString())
+                    .AddInterceptors(services
+                        .GetRequiredService<AuditInterceptor>());
                 if (withSamples)
                 {
                     options.UseSeeding(SampleData.Seed)
