@@ -95,6 +95,21 @@ public sealed class TestDatabase : IAsyncDisposable
         return new ProductSummaryService(factory, cache);
     }
 
+    public IDbContextFactory<StockroomDbContext> CreateFactoryWith(
+        IInterceptor interceptor)
+    {
+        // The other tests run without this rule, on purpose.
+        var withRule =
+            new DbContextOptionsBuilder<StockroomDbContext>(options)
+                .AddInterceptors(interceptor)
+                .Options;
+        var factory =
+            Substitute.For<IDbContextFactory<StockroomDbContext>>();
+        factory.CreateDbContextAsync(Arg.Any<CancellationToken>())
+            .Returns(_ => new StockroomDbContext(withRule));
+        return factory;
+    }
+
     /// <summary>
     /// Identity as the app registers it, on this database. Dispose
     /// the scope at the end of the test.

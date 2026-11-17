@@ -32,6 +32,7 @@ builder.Services.AddScoped<OrderListService>();
 builder.Services.AddScoped<OrderActivity>();
 builder.Services.AddHybridCache();
 builder.Services.AddScoped<ProductSummaryService>();
+builder.Services.AddScoped<SubscriptionService>();
 
 var archiveFolder = Path.GetFullPath(
     builder.Configuration["Imports:ArchiveFolder"]
@@ -79,6 +80,7 @@ else
 var app = builder.Build();
 
 await app.MigrateDatabaseAsync();
+await app.StartReadOnlyRuleAsync();
 await app.EnsureAccountsAsync();
 
 // Configure the HTTP request pipeline.

@@ -1,0 +1,21 @@
+@using Stockroom.Core.ReadOnly
+@inject SubscriptionState Subscription
+
+@if (!Subscription.AllowsWrites)
+{
+    <div class="alert alert-warning" role="status">
+        Stockroom is read-only.
+        @if (Subscription.PaidUntil is { } until)
+        {
+            <text>
+                The subscription ended on
+                @BusinessFormats.FormatDate(until).
+            </text>
+        }
+        else
+        {
+            <text>No subscription is registered.</text>
+        }
+        You can still read and export everything.
+    </div>
+}

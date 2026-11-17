@@ -32,6 +32,14 @@ public static class SampleData
         suppliers.AddRange(
             CreateSuppliers().Where(s => !names.Contains(s.Name)));
 
+        // Paid in development, so the sample app can write.
+        var subscriptions = db.Set<Subscription>();
+        if (!await subscriptions.AnyAsync(token))
+        {
+            subscriptions.Add(
+                new() { PaidUntil = new(2027, 12, 31) });
+        }
+
         // Saved first, so the orders below can look up the keys.
         await db.SaveChangesAsync(token);
         await AddMissingOrdersAsync(db, token);

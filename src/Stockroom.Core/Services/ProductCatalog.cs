@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Stockroom.Core.Data;
 using Stockroom.Core.Entities;
+using Stockroom.Core.ReadOnly;
 
 namespace Stockroom.Core.Services;
 
@@ -133,6 +134,9 @@ public class ProductCatalog(
         IReadOnlyList<string> skus, CancellationToken ct = default)
     {
         await using var db = await factory.CreateDbContextAsync(ct);
+
+        // ExecuteUpdate never passes SaveChanges or its interceptor.
+        db.ThrowIfReadOnly();
 
         // No change tracker here: the version must be set by hand,
         // or an open form would overwrite this change unnoticed.

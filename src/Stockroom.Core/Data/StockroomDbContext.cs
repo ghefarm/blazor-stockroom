@@ -16,6 +16,7 @@ public class StockroomDbContext(
         Set<PurchaseOrderLine>();
     public DbSet<PriceListImport> PriceListImports =>
         Set<PriceListImport>();
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

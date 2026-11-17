@@ -395,6 +395,19 @@ namespace Stockroom.Core.Migrations
                     b.ToTable("PurchaseOrderLines");
                 });
 
+            modelBuilder.Entity("Stockroom.Core.Entities.Subscription", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateOnly>("PaidUntil")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Subscriptions");
+                });
+
             modelBuilder.Entity("Stockroom.Core.Entities.Supplier", b =>
                 {
                     b.Property<int>("Id")

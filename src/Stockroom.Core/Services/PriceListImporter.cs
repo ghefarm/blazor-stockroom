@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Stockroom.Core.Data;
 using Stockroom.Core.Entities;
 using Stockroom.Core.Files;
+using Stockroom.Core.ReadOnly;
 
 namespace Stockroom.Core.Services;
 
@@ -23,6 +24,14 @@ public class PriceListImporter(
         {
             return ImportResult.Fail(
                 "Only .csv files can be imported.");
+        }
+
+        // The archive is a file, which the interceptor never sees.
+        // Asked before the first file is written, even the probe.
+        var readOnly = await FindReadOnlyReasonAsync(ct);
+        if (readOnly is not null)
+        {
+            return ImportResult.Fail(readOnly);
         }
 
         if (!CanWriteArchive())
@@ -70,6 +79,21 @@ public class PriceListImporter(
             // Without its database row, the copy would be an orphan.
             File.Delete(path);
             throw;
+        }
+    }
+
+    private async Task<string?> FindReadOnlyReasonAsync(
+        CancellationToken ct)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+        try
+        {
+            db.ThrowIfReadOnly();
+            return null;
+        }
+        catch (ReadOnlyModeException e)
+        {
+            return e.Message;
         }
     }
 
