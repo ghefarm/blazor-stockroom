@@ -1,5 +1,6 @@
 using Stockroom.Core.Services;
 using Stockroom.Web.Components;
+using Stockroom.Web.Endpoints;
 using Stockroom.Web.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,7 @@ builder.AddStockroomDatabase();
 builder.Services.AddScoped<ProductCatalog>();
 builder.Services.AddScoped<SupplierDirectory>();
 builder.Services.AddScoped<PurchaseOrderService>();
+builder.Services.AddScoped<OrderListService>();
 
 var app = builder.Build();
 
@@ -36,6 +38,7 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.MapOrderExport();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

@@ -1,41 +1,93 @@
 @page "/orders"
-@inject PurchaseOrderService OrderService
+@rendermode InteractiveServer
 
 <PageTitle>Orders</PageTitle>
 
 <h1>Purchase orders</h1>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Number</th>
-            <th>Supplier</th>
-            <th>Ordered on</th>
-            <th>Status</th>
-            <th class="text-end">Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var order in orders)
+@if (list is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="row g-2 mb-3">
+        <div class="col-md-4">
+            <label class="form-label" for="search">Search</label>
+            <input id="search" class="form-control"
+                   placeholder="Order number or product"
+                   @bind="searchText" @bind:event="oninput"
+                   @bind:after="SearchAfterPauseAsync" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="supplier">Supplier</label>
+            <select id="supplier" class="form-select"
+                    value="@list.Filter.SupplierId"
+                    @onchange="SelectSupplierAsync">
+                <option value="">All suppliers</option>
+                @foreach (var supplier in list.Suppliers)
+                {
+                    <option value="@supplier.Id">
+                        @supplier.Name
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label" for="from">From</label>
+            <input id="from" type="date" class="form-control"
+                   value="@FromText"
+                   @onchange="SelectFromAsync" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label" for="to">To</label>
+            <input id="to" type="date" class="form-control"
+                   value="@ToText"
+                   @onchange="SelectToAsync" />
+        </div>
+    </div>
+
+    <div class="btn-group mb-3" role="group" aria-label="Status">
+        @foreach (var status in tabs)
         {
-            <tr>
-                <td>@order.OrderNumber</td>
-                <td>@order.SupplierName</td>
-                <td>@order.OrderedOn.ToString("yyyy-MM-dd")</td>
-                <td>@order.Status</td>
-                <td class="text-end">
-                    @Money.Format(order.TotalCents)
-                </td>
-            </tr>
+            <button type="button"
+                    class="btn @(status == list.Filter.Status
+                        ? "btn-primary" : "btn-outline-primary")"
+                    @onclick="() => SelectStatusAsync(status)">
+                @Describe(status) (@CountFor(status))
+            </button>
         }
-    </tbody>
-</table>
+    </div>
 
-@code {
-    private IReadOnlyList<OrderSummary> orders = [];
+    <OrderTable Rows="list.Rows" />
 
-    protected override async Task OnInitializedAsync()
-    {
-        orders = await OrderService.ListAsync();
-    }
+    <div class="d-flex flex-wrap gap-3 align-items-center">
+        <span>
+            Showing @list.FirstRow to @list.LastRow
+            of @list.TotalCount orders
+        </span>
+        <button type="button" class="btn btn-outline-secondary"
+                disabled="@(list.Page == 1)"
+                @onclick="() => GoToPageAsync(list.Page - 1)">
+            Previous
+        </button>
+        <span>Page @list.Page of @list.PageCount</span>
+        <button type="button" class="btn btn-outline-secondary"
+                disabled="@(list.Page == list.PageCount)"
+                @onclick="() => GoToPageAsync(list.Page + 1)">
+            Next
+        </button>
+        <select class="form-select w-auto" aria-label="Rows per page"
+                value="@list.PageSize" @onchange="SelectSizeAsync">
+            @foreach (var size in OrderListService.PageSizes)
+            {
+                <option value="@size">@size per page</option>
+            }
+        </select>
+        <button type="button" class="btn btn-link"
+                @onclick="ResetAsync">
+            Reset filter
+        </button>
+        <a href="@ExportLink" data-enhance-nav="false">Export CSV</a>
+    </div>
 }
