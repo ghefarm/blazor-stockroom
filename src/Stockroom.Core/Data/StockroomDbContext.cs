@@ -17,6 +17,11 @@ public class StockroomDbContext(
     public DbSet<PriceListImport> PriceListImports =>
         Set<PriceListImport>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<Delivery> Deliveries => Set<Delivery>();
+    public DbSet<DeliveryMatch> DeliveryMatches =>
+        Set<DeliveryMatch>();
+    public DbSet<MatchingSettings> MatchingSettings =>
+        Set<MatchingSettings>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

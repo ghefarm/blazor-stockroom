@@ -241,6 +241,108 @@ namespace Stockroom.Core.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Stockroom.Core.Entities.Delivery", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DeliveryNote")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("ReceivedOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("TotalCents")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("Deliveries");
+                });
+
+            modelBuilder.Entity("Stockroom.Core.Entities.DeliveryMatch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AmountPoints")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DatePoints")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Decision")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DeliveryId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PurchaseOrderId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ReferencePoints")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SupplierPoints")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeliveryId");
+
+                    b.HasIndex("PurchaseOrderId");
+
+                    b.ToTable("DeliveryMatches");
+                });
+
+            modelBuilder.Entity("Stockroom.Core.Entities.MatchingSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AutoThreshold")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DaysAfterOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MinimumLead")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SuggestThreshold")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MatchingSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AutoThreshold = 80,
+                            DaysAfterOrder = 30,
+                            MinimumLead = 10,
+                            SuggestThreshold = 50
+                        });
+                });
+
             modelBuilder.Entity("Stockroom.Core.Entities.PriceListImport", b =>
                 {
                     b.Property<int>("Id")
@@ -549,6 +651,30 @@ namespace Stockroom.Core.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Stockroom.Core.Entities.Delivery", b =>
+                {
+                    b.HasOne("Stockroom.Core.Entities.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Stockroom.Core.Entities.DeliveryMatch", b =>
+                {
+                    b.HasOne("Stockroom.Core.Entities.Delivery", null)
+                        .WithMany()
+                        .HasForeignKey("DeliveryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Stockroom.Core.Entities.PurchaseOrder", null)
+                        .WithMany()
+                        .HasForeignKey("PurchaseOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
