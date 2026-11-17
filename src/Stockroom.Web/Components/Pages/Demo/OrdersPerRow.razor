@@ -1,0 +1,36 @@
+@page "/demo/orders-per-row"
+@attribute [Authorize(Roles = Roles.PurchasingOrAdmin)]
+@inject PurchaseOrderService OrderService
+
+<PageTitle>Orders, one query per row</PageTitle>
+
+<h1>Orders, one query per row</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Number</th>
+            <th>Supplier</th>
+            <th>Products</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in orders)
+        {
+            <tr>
+                <td>@order.OrderNumber</td>
+                <td>@order.SupplierName</td>
+                <OrderProductsCell OrderId="@order.Id" />
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private IReadOnlyList<OrderSummary> orders = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        orders = await OrderService.ListAsync();
+    }
+}

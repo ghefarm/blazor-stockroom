@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -33,23 +34,26 @@ public sealed class TestDatabase : IAsyncDisposable
     public TimeProvider Time { get; } =
         Substitute.For<TimeProvider>();
 
-    private TestDatabase(SqliteConnection connection)
+    private TestDatabase(
+        SqliteConnection connection, IInterceptor[] interceptors)
     {
         this.connection = connection;
         options = new DbContextOptionsBuilder<StockroomDbContext>()
             .UseSqlite(connection)
             .UseApplicationServiceProvider(IdentityOptionsProvider)
             .AddInterceptors(new AuditInterceptor(User, Time))
+            .AddInterceptors(interceptors)
             .Options;
     }
 
-    public static async Task<TestDatabase> CreateAsync()
+    public static async Task<TestDatabase> CreateAsync(
+        params IInterceptor[] interceptors)
     {
         // An in-memory database lives as long as its connection.
         var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
 
-        var database = new TestDatabase(connection);
+        var database = new TestDatabase(connection, interceptors);
         await using var db = database.CreateContext();
 
         // The migrations, not EnsureCreated, so the tests see the

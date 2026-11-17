@@ -1,0 +1,19 @@
+@inject ILogger<SummaryInMarkup> Logger
+
+<p class="text-muted">
+    @Products.Count products: @Count(StockLevel.InStock) in stock,
+    @Count(StockLevel.Low) low,
+    @Count(StockLevel.OutOfStock) out of stock
+</p>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<Product> Products { get; set; } = [];
+
+    private int Count(StockLevel level)
+    {
+        Logger.LogDebug("Counting {Count} products", Products.Count);
+        return Products.Count(
+            p => StockRules.DetermineLevel(p.StockQuantity) == level);
+    }
+}

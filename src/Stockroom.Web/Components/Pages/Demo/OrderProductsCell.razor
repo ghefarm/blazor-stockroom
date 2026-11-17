@@ -1,0 +1,15 @@
+@inject PurchaseOrderService OrderService
+
+<td>@string.Join(", ", names)</td>
+
+@code {
+    [Parameter, EditorRequired]
+    public int OrderId { get; set; }
+
+    private IReadOnlyList<string> names = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        names = await OrderService.GetProductNamesAsync(OrderId);
+    }
+}

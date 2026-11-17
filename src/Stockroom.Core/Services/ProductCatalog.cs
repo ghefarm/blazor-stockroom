@@ -22,6 +22,21 @@ public class ProductCatalog(
             .ToListAsync(ct);
     }
 
+    public async Task<ProductSlice> GetSliceAsync(
+        int start, int count, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+        var total = await db.Products.CountAsync(ct);
+        var items = await db.Products
+            .AsNoTracking()
+            .OrderBy(p => p.Id)
+            .Skip(start)
+            .Take(count)
+            .ToListAsync(ct);
+
+        return new ProductSlice(items, total);
+    }
+
     public async Task<Product?> FindByIdAsync(
         int id, CancellationToken ct = default)
     {

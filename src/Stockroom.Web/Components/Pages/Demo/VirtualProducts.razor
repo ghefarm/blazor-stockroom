@@ -1,0 +1,42 @@
+@page "/demo/virtualize"
+@attribute [Authorize(Roles = Roles.StockAreasOrAdmin)]
+@rendermode InteractiveServer
+@inject ProductCatalog Catalog
+
+<PageTitle>All products, virtualized</PageTitle>
+
+<h1>All products</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>SKU</th>
+            <th>Name</th>
+            <th class="text-end">Price</th>
+            <th class="text-end">Quantity</th>
+            <th>Stock</th>
+        </tr>
+    </thead>
+    <tbody>
+        <Virtualize ItemsProvider="@LoadAsync" Context="product"
+                    SpacerElement="tr">
+            <ItemContent>
+                <ProductRow Product="@product" />
+            </ItemContent>
+            <Placeholder>
+                <tr><td colspan="5">Loading...</td></tr>
+            </Placeholder>
+        </Virtualize>
+    </tbody>
+</table>
+
+@code {
+    private async ValueTask<ItemsProviderResult<Product>> LoadAsync(
+        ItemsProviderRequest request)
+    {
+        var slice = await Catalog.GetSliceAsync(
+            request.StartIndex, request.Count,
+            request.CancellationToken);
+        return new(slice.Items, slice.TotalCount);
+    }
+}

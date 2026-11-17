@@ -1,0 +1,29 @@
+@page "/demo/render-cost"
+@attribute [Authorize(Roles = Roles.StockAreasOrAdmin)]
+@rendermode InteractiveServer
+@inject ProductCatalog Catalog
+
+<PageTitle>Render cost</PageTitle>
+
+<h1>Render cost</h1>
+
+<p>
+    <label>
+        Note
+        <input @bind="note" @bind:event="oninput" />
+    </label>
+    @note.Length characters
+</p>
+
+<SummaryInMarkup Products="@all" />
+<StockSummary Products="@all" />
+
+@code {
+    private IReadOnlyList<Product> all = [];
+    private string note = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        all = await Catalog.GetAllAsync();
+    }
+}

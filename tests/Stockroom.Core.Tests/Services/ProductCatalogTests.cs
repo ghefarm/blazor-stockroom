@@ -17,6 +17,7 @@ public class ProductCatalogTests
         var found = await catalog.ChangePriceAsync(shelf.Id, 9500);
         var result = await catalog.ChangePricesAsync(
             [new("TP-050", 260), new("BX-L", 150)]);
+        var slice = await catalog.GetSliceAsync(2, 3);
 
         await using var check = database.CreateContext();
         var prices = await check.Products
@@ -31,6 +32,9 @@ public class ProductCatalogTests
             Assert.That(found, Is.True);
             Assert.That(result, Is.EqualTo(new BatchResult(2, 0)));
             Assert.That(prices, Is.EqualTo(new[] { 150, 9500, 260 }));
+            Assert.That(slice.Items.Select(p => p.Sku), Is.EqualTo(
+                new[] { "TP-050", "BX-S", "BX-L" }));
+            Assert.That(slice.TotalCount, Is.EqualTo(8));
         }
     }
 
@@ -45,12 +49,15 @@ public class ProductCatalogTests
         var result = await catalog.ChangePricesAsync(
             [new("NO-SUCH", 100), new("TP-050", 249)]);
         var missing = await catalog.FindByIdAsync(999);
+        var pastTheEnd = await catalog.GetSliceAsync(50, 10);
 
         using (Assert.EnterMultipleScope())
         {
             Assert.That(found, Is.False);
             Assert.That(result, Is.EqualTo(new BatchResult(0, 2)));
             Assert.That(missing, Is.Null);
+            Assert.That(pastTheEnd.Items, Is.Empty);
+            Assert.That(pastTheEnd.TotalCount, Is.EqualTo(8));
         }
     }
 }

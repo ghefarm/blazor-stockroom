@@ -1,0 +1,28 @@
+@inject ILogger<StockSummary> Logger
+
+<p class="text-muted">
+    @counts.Total products: @counts.InStock in stock,
+    @counts.Low low, @counts.OutOfStock out of stock
+</p>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<Product> Products { get; set; } = [];
+
+    private IReadOnlyList<Product>? counted;
+    private StockCounts counts = new(0, 0, 0);
+
+    protected override void OnParametersSet()
+    {
+        // The parent passes the same list again after every tab
+        // click. Counting it again would give the same numbers.
+        if (ReferenceEquals(Products, counted))
+        {
+            return;
+        }
+
+        Logger.LogDebug("Counting {Count} products", Products.Count);
+        counts = StockRules.CountLevels(Products);
+        counted = Products;
+    }
+}

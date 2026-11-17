@@ -23,6 +23,29 @@ public static class StockRules
         return StockLevel.InStock;
     }
 
+    public static StockCounts CountLevels(
+        IEnumerable<Product> products)
+    {
+        int inStock = 0, low = 0, outOfStock = 0;
+        foreach (var product in products)
+        {
+            switch (DetermineLevel(product.StockQuantity))
+            {
+                case StockLevel.Low:
+                    low++;
+                    break;
+                case StockLevel.OutOfStock:
+                    outOfStock++;
+                    break;
+                default:
+                    inStock++;
+                    break;
+            }
+        }
+
+        return new StockCounts(inStock, low, outOfStock);
+    }
+
     public static IReadOnlyList<Product> FilterByLevel(
         IEnumerable<Product> products, StockLevel? level)
     {

@@ -5,7 +5,9 @@ using Stockroom.Core.Services;
 namespace Stockroom.Web.Components.Pages;
 
 public partial class Orders(
-    OrderListService orderList, NavigationManager navigation)
+    OrderListService orderList,
+    PurchaseOrderService orderService,
+    NavigationManager navigation)
     : IDisposable
 {
     private static readonly OrderStatus?[] tabs =
@@ -18,6 +20,7 @@ public partial class Orders(
     ];
 
     private OrderListPage? list;
+    private IReadOnlyList<OrderRow> rows = [];
     private string searchText = "";
     private CancellationTokenSource? pause;
 
@@ -62,8 +65,8 @@ public partial class Orders(
             return;
         }
 
-        list = await orderList.LoadAsync(requested, page, size);
-        searchText = list.Filter.Search ?? "";
+        await LoadAsync(requested, page, size);
+        searchText = list!.Filter.Search ?? "";
     }
 
     private async Task ChangeAsync(
@@ -78,13 +81,24 @@ public partial class Orders(
 
         // The list first, the address second. When the address comes
         // back to OnParametersSetAsync, it matches and loads nothing.
-        list = await orderList.LoadAsync(filter, page, size);
+        await LoadAsync(filter, page, size);
         var values = OrderListQuery.Write(list.Filter);
         values[OrderListQuery.PageName] = list.Page;
         values[OrderListQuery.SizeName] = list.PageSize;
         navigation.NavigateTo(
             navigation.GetUriWithQueryParameters(values),
             replace: true);
+    }
+
+    private async Task LoadAsync(
+        OrderListFilter filter, int page, int size)
+    {
+        var loaded = await orderList.LoadAsync(filter, page, size);
+
+        // One more query for the product names, over the ids of the
+        // rows on this page only.
+        rows = await orderService.AddProductNamesAsync(loaded.Rows);
+        list = loaded;
     }
 
     private Task ChangeFilterAsync(OrderListFilter filter) =>

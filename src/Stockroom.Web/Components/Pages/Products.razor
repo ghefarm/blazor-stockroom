@@ -12,6 +12,8 @@
 
 <StockTabs Selected="@selected" OnSelect="@SelectLevel" />
 
+<StockSummary Products="@(All ?? [])" />
+
 <PrintButton Title="@PrintTitle" />
 
 <table class="table">
@@ -27,7 +29,7 @@
     <tbody>
         @foreach (var product in shown)
         {
-            <ProductRow Product="@product" />
+            <ProductRow @key="product.Id" Product="@product" />
         }
     </tbody>
 </table>
