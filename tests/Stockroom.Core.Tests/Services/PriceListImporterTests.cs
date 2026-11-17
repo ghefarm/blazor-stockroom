@@ -82,9 +82,11 @@ public class PriceListImporterTests
         // A file where the folder should be: nothing can be written.
         var blocked = folder + ".blocked";
         await File.WriteAllTextAsync(blocked, "");
+        var factory = database.CreateFactory();
         var noArchive = await new PriceListImporter(
-            database.CreateFactory(), new ImportArchive(blocked),
-            CreateClock()).ImportAsync("new.csv", Csv(good));
+            factory, new ImportArchive(blocked), CreateClock(),
+            TestDatabase.CreateSummaries(factory))
+            .ImportAsync("new.csv", Csv(good));
         File.Delete(blocked);
 
         // The save fails after the file was archived.
@@ -116,7 +118,8 @@ public class PriceListImporterTests
 
     private PriceListImporter CreateImporter(
         IDbContextFactory<StockroomDbContext> factory) =>
-        new(factory, new ImportArchive(folder), CreateClock());
+        new(factory, new ImportArchive(folder), CreateClock(),
+            TestDatabase.CreateSummaries(factory));
 
     private static BusinessClock CreateClock()
     {

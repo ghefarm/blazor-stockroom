@@ -20,7 +20,7 @@ public class AuditTests
         await using var database = await TestDatabase.CreateAsync();
         database.User.GetName().Returns("anna", "ben");
         database.Time.GetUtcNow().Returns(Monday, Tuesday);
-        var catalog = new ProductCatalog(database.CreateFactory());
+        var catalog = database.CreateCatalog();
 
         var id = await AddProductAsync(database);
         await catalog.ChangePriceAsync(id, 500);

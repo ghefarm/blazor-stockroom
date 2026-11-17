@@ -1,0 +1,15 @@
+@inject SingletonMarker Singleton
+@inject ScopedMarker Scoped
+@inject TransientMarker Transient
+
+<tr>
+    <th>@Label</th>
+    <td>@Singleton.Number</td>
+    <td>@Scoped.Number</td>
+    <td>@Transient.Number</td>
+</tr>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+}

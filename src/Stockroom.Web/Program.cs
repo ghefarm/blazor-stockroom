@@ -1,5 +1,6 @@
 using PdfSharp.Fonts;
 using Stockroom.Core;
+using Stockroom.Core.Lifetimes;
 using Stockroom.Core.Services;
 using Stockroom.Web.Components;
 using Stockroom.Web.Endpoints;
@@ -27,6 +28,8 @@ builder.Services.AddScoped<SupplierDirectory>();
 builder.Services.AddScoped<PurchaseOrderService>();
 builder.Services.AddScoped<OrderListService>();
 builder.Services.AddScoped<OrderActivity>();
+builder.Services.AddHybridCache();
+builder.Services.AddScoped<ProductSummaryService>();
 
 var archiveFolder = Path.GetFullPath(
     builder.Configuration["Imports:ArchiveFolder"]
@@ -37,6 +40,11 @@ builder.Services.AddScoped<PriceListImporter>();
 
 // PDFsharp looks for fonts only where it is told to.
 GlobalFontSettings.UseWindowsFontsUnderWindows = true;
+
+// Three markers that only show their lifetime on a page.
+builder.Services.AddSingleton<SingletonMarker>();
+builder.Services.AddScoped<ScopedMarker>();
+builder.Services.AddTransient<TransientMarker>();
 
 var app = builder.Build();
 

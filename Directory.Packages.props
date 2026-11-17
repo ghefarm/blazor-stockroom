@@ -16,6 +16,9 @@
       Version="$(DotNetServicingVersion)" />
     <PackageVersion Include="QRCoder" Version="1.6.0" />
     <PackageVersion Include="Blazor-ApexCharts" Version="8.0.0" />
+    <!-- Not in the servicing train of the framework packages. -->
+    <PackageVersion Include="Microsoft.Extensions.Caching.Hybrid"
+                    Version="10.11.0" />
   </ItemGroup>
 
   <ItemGroup Label="Files">

@@ -9,7 +9,8 @@ namespace Stockroom.Core.Services;
 public class PriceListImporter(
     IDbContextFactory<StockroomDbContext> factory,
     ImportArchive archive,
-    BusinessClock clock)
+    BusinessClock clock,
+    ProductSummaryService summaries)
 {
     public const int MaxBytes = 2 * 1024 * 1024;
 
@@ -162,6 +163,7 @@ public class PriceListImporter(
 
         // One save is one transaction: prices and history together.
         await db.SaveChangesAsync(ct);
+        await summaries.InvalidateAsync();
         return prices;
     }
 

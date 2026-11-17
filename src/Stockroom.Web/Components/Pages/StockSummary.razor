@@ -1,0 +1,34 @@
+@page "/reports/stock-summary"
+@attribute [Authorize(Roles = Roles.ReportsOrAdmin)]
+@inject ProductSummaryService Summaries
+
+<PageTitle>Stock summary</PageTitle>
+
+<h1>Stock summary</h1>
+
+<table>
+    <tr><th>Stock level</th><th>Products</th><th>Value</th></tr>
+    @foreach (var (label, summary) in rows)
+    {
+        <tr>
+            <td>@label</td>
+            <td>@summary.Count</td>
+            <td>@Money.Format(summary.StockValueCents)</td>
+        </tr>
+    }
+</table>
+
+@code {
+    private readonly List<(string, ProductSummary)> rows = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        rows.Add(("All", await Summaries.SummarizeAsync(null)));
+        rows.Add(("In stock",
+            await Summaries.SummarizeAsync(StockLevel.InStock)));
+        rows.Add(("Low stock",
+            await Summaries.SummarizeAsync(StockLevel.Low)));
+        rows.Add(("Out of stock",
+            await Summaries.SummarizeAsync(StockLevel.OutOfStock)));
+    }
+}

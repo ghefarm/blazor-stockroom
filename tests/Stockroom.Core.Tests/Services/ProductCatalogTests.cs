@@ -10,7 +10,7 @@ public class ProductCatalogTests
     {
         await using var database = await TestDatabase.CreateAsync();
         await database.SeedAsync();
-        var catalog = new ProductCatalog(database.CreateFactory());
+        var catalog = database.CreateCatalog();
         var shelf = (await catalog.GetAllAsync())
             .Single(p => p.Sku == "SH-120");
 
@@ -39,7 +39,7 @@ public class ProductCatalogTests
     {
         await using var database = await TestDatabase.CreateAsync();
         await database.SeedAsync();
-        var catalog = new ProductCatalog(database.CreateFactory());
+        var catalog = database.CreateCatalog();
 
         var found = await catalog.ChangePriceAsync(999, 100);
         var result = await catalog.ChangePricesAsync(

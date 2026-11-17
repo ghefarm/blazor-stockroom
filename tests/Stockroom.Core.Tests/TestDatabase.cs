@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Stockroom.Core.Auditing;
@@ -67,6 +68,26 @@ public sealed class TestDatabase : IAsyncDisposable
         factory.CreateDbContextAsync(Arg.Any<CancellationToken>())
             .Returns(_ => CreateContext());
         return factory;
+    }
+
+    public ProductCatalog CreateCatalog()
+    {
+        var factory = CreateFactory();
+        return new ProductCatalog(factory, CreateSummaries(factory));
+    }
+
+    /// <summary>
+    /// The summaries with a real HybridCache in memory, because every
+    /// service that writes products clears them.
+    /// </summary>
+    public static ProductSummaryService CreateSummaries(
+        IDbContextFactory<StockroomDbContext> factory)
+    {
+        var cache = new ServiceCollection()
+            .AddHybridCache().Services
+            .BuildServiceProvider()
+            .GetRequiredService<HybridCache>();
+        return new ProductSummaryService(factory, cache);
     }
 
     /// <summary>

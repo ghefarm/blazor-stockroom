@@ -4,8 +4,11 @@ using Stockroom.Core.Entities;
 
 namespace Stockroom.Core.Services;
 
+// Every method that writes products also clears the summaries.
+// A caller cannot forget it, because the caller never does it.
 public class ProductCatalog(
-    IDbContextFactory<StockroomDbContext> factory)
+    IDbContextFactory<StockroomDbContext> factory,
+    ProductSummaryService summaries)
 {
     public async Task<IReadOnlyList<Product>> GetAllAsync(
         CancellationToken ct = default)
@@ -43,6 +46,7 @@ public class ProductCatalog(
 
         product.PriceCents = priceCents;
         await db.SaveChangesAsync(ct);
+        await summaries.InvalidateAsync();
         return true;
     }
 
@@ -59,6 +63,7 @@ public class ProductCatalog(
 
         product.StockQuantity = quantity;
         await db.SaveChangesAsync(ct);
+        await summaries.InvalidateAsync();
         return true;
     }
 
@@ -75,6 +80,7 @@ public class ProductCatalog(
 
         product.Name = name.Trim();
         await db.SaveChangesAsync(ct);
+        await summaries.InvalidateAsync();
         return true;
     }
 
@@ -85,6 +91,7 @@ public class ProductCatalog(
         await using var db = await factory.CreateDbContextAsync(ct);
         var result = await ApplyPricesAsync(db, changes, ct);
         await db.SaveChangesAsync(ct);
+        await summaries.InvalidateAsync();
         return result;
     }
 
