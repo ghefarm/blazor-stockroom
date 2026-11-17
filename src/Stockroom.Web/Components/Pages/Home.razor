@@ -1,5 +1,5 @@
 @page "/"
-@using Stockroom.Core.Sample
+@inject ProductCatalog Catalog
 
 <PageTitle>Stockroom</PageTitle>
 
@@ -25,11 +25,15 @@
 </div>
 
 @code {
-    private readonly IReadOnlyList<Product> products =
-        SampleProducts.All;
+    private IReadOnlyList<Product> products = [];
 
     private readonly StockLevel[] levels =
         [StockLevel.Low, StockLevel.OutOfStock];
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await Catalog.GetAllAsync();
+    }
 
     private int CountAt(StockLevel level) =>
         StockRules.FilterByLevel(products, level).Count;

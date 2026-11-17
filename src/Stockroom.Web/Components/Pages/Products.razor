@@ -1,6 +1,6 @@
 @page "/products"
 @rendermode InteractiveServer
-@using Stockroom.Core.Sample
+@inject ProductCatalog Catalog
 @inject NavigationManager Navigation
 
 <PageTitle>Products</PageTitle>
@@ -30,12 +30,18 @@
 </table>
 
 @code {
+    private IReadOnlyList<Product> all = [];
     private StockLevel? selected;
     private IReadOnlyList<Product> shown = [];
     private bool loaded;
 
     [SupplyParameterFromQuery(Name = StockQuery.Name)]
     private string? Stock { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        all = await Catalog.GetAllAsync();
+    }
 
     protected override void OnParametersSet()
     {
@@ -63,7 +69,7 @@
     private void ApplyFilter(StockLevel? level)
     {
         selected = level;
-        shown = StockRules.FilterByLevel(SampleProducts.All, level);
+        shown = StockRules.FilterByLevel(all, level);
         loaded = true;
     }
 }

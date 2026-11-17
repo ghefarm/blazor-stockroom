@@ -1,11 +1,16 @@
 @page "/suppliers/new"
 @page "/suppliers/{Id:int}/edit"
-@using Stockroom.Core.Sample
+@inject SupplierDirectory Suppliers
 @inject NavigationManager Navigation
 
 <PageTitle>@Title</PageTitle>
 
 <h1>@Title</h1>
+
+@if (notice is not null)
+{
+    <Banner Notice="@notice" />
+}
 
 @if (Input is not null)
 {
@@ -62,10 +67,12 @@
     [SupplyParameterFromForm(FormName = "supplier")]
     private SupplierInput? Input { get; set; }
 
+    private Notice? notice;
+
     private string Title =>
         Id is null ? "New supplier" : "Edit supplier";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (Id is null)
         {
@@ -73,7 +80,7 @@
             return;
         }
 
-        var supplier = SampleSuppliers.FindById(Id.Value);
+        var supplier = await Suppliers.FindByIdAsync(Id.Value);
 
         if (supplier is null)
         {
@@ -86,21 +93,28 @@
         Input ??= SupplierInput.FromSupplier(supplier);
     }
 
-    private void Save()
+    private async Task Save()
     {
         var supplier = new Supplier { Id = Id ?? 0 };
         Input!.CopyTo(supplier);
 
-        if (Id is null)
+        var result = Id is null
+            ? await Suppliers.AddAsync(supplier)
+            : await Suppliers.UpdateAsync(supplier);
+
+        if (result == SupplierChangeResult.NameTaken)
         {
-            SampleSuppliers.Add(supplier);
-            Navigation.NavigateTo("suppliers?done=created");
+            notice = new(NoticeKind.Error,
+                "Another supplier already has this name.");
             return;
         }
 
-        var done = SampleSuppliers.Update(supplier)
-            ? "updated"
-            : "missing";
+        var done = result switch
+        {
+            SupplierChangeResult.Done when Id is null => "created",
+            SupplierChangeResult.Done => "updated",
+            _ => "missing",
+        };
         Navigation.NavigateTo($"suppliers?done={done}");
     }
 }

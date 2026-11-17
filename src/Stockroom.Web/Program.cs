@@ -1,3 +1,4 @@
+using Stockroom.Core.Services;
 using Stockroom.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,9 @@ builder.Services.AddRazorComponents()
 
 // Lets EditForm validate the rows of a list, not only the top level.
 builder.Services.AddValidation();
+
+builder.Services.AddScoped<ProductCatalog>();
+builder.Services.AddScoped<SupplierDirectory>();
 
 var app = builder.Build();
 

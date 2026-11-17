@@ -1,0 +1,33 @@
+<form method="post" @formname="delete" data-enhance
+      @onsubmit="Submit"
+      class="border border-danger rounded p-3 mb-3">
+    <AntiforgeryToken />
+    <p>
+        Delete <strong>@Supplier.Name</strong>?
+        You cannot undo this.
+    </p>
+    <div class="form-check mb-3">
+        <input id="confirm" type="checkbox" required
+               name="Confirmed" value="true"
+               class="form-check-input" />
+        <label for="confirm" class="form-check-label">
+            Yes, delete this supplier
+        </label>
+    </div>
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a href="suppliers" class="btn btn-link">Cancel</a>
+</form>
+
+@code {
+    [Parameter, EditorRequired]
+    public Supplier Supplier { get; set; } = default!;
+
+    // The form only asks. The page decides what a delete means.
+    [Parameter]
+    public EventCallback<bool> OnSubmit { get; set; }
+
+    [SupplyParameterFromForm(FormName = "delete")]
+    private bool Confirmed { get; set; }
+
+    private Task Submit() => OnSubmit.InvokeAsync(Confirmed);
+}

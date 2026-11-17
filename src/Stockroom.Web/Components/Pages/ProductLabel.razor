@@ -1,6 +1,6 @@
 @page "/products/{Id:int}/label"
 @layout PrintLayout
-@using Stockroom.Core.Sample
+@inject ProductCatalog Catalog
 @inject NavigationManager Navigation
 
 @if (product is not null)
@@ -22,9 +22,9 @@
     [Parameter]
     public int Id { get; set; }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        product = SampleProducts.FindById(Id);
+        product = await Catalog.FindByIdAsync(Id);
 
         if (product is null)
         {

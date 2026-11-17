@@ -1,10 +1,15 @@
 @page "/suppliers/batch"
-@using Stockroom.Core.Sample
+@inject SupplierDirectory Suppliers
 @inject NavigationManager Navigation
 
 <PageTitle>Add several suppliers</PageTitle>
 
 <h1>Add several suppliers</h1>
+
+@if (notice is not null)
+{
+    <Banner Notice="@notice" />
+}
 
 <EditForm Model="Input" FormName="batch" Enhance
           OnValidSubmit="Save">
@@ -55,13 +60,16 @@
     [SupplyParameterFromForm(FormName = "batch")]
     private SupplierBatchInput? Input { get; set; }
 
+    private Notice? notice;
+
     protected override void OnInitialized()
     {
         Input ??= SupplierBatchInput.Create(RowCount);
     }
 
-    private void Save()
+    private async Task Save()
     {
+        List<Supplier> suppliers = [];
         foreach (var row in Input!.Rows)
         {
             var supplier = new Supplier();
@@ -70,7 +78,16 @@
             // The rows have no Active box. A new supplier from this
             // page always starts active.
             supplier.IsActive = true;
-            SampleSuppliers.Add(supplier);
+            suppliers.Add(supplier);
+        }
+
+        var result = await Suppliers.AddAllAsync(suppliers);
+
+        if (result == SupplierChangeResult.NameTaken)
+        {
+            notice = new(NoticeKind.Error,
+                "A name is used twice or exists already.");
+            return;
         }
 
         Navigation.NavigateTo("suppliers?done=added");

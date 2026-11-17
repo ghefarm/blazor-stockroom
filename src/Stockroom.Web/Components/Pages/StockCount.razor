@@ -1,5 +1,5 @@
 @page "/products/{Id:int}/count"
-@using Stockroom.Core.Sample
+@inject ProductCatalog Catalog
 @inject NavigationManager Navigation
 
 @if (product is not null && Input is not null)
@@ -47,9 +47,9 @@
     [SupplyParameterFromForm(FormName = "count")]
     private StockCountInput? Input { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        product = SampleProducts.FindById(Id);
+        product = await Catalog.FindByIdAsync(Id);
 
         if (product is null)
         {
@@ -60,9 +60,10 @@
         Input ??= new() { CountedQuantity = product.StockQuantity };
     }
 
-    private void Save()
+    private async Task Save()
     {
-        SampleProducts.SetStockQuantity(Id, Input!.CountedQuantity);
+        await Catalog.ChangeStockQuantityAsync(
+            Id, Input!.CountedQuantity);
         Navigation.NavigateTo($"products/{Id}?done=counted");
     }
 }

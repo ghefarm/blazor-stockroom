@@ -1,6 +1,6 @@
 @page "/products/reorder"
 @rendermode InteractiveServer
-@using Stockroom.Core.Sample
+@inject ProductCatalog Catalog
 @inject ILogger<Reorder> Logger
 
 <PageTitle>Reorder</PageTitle>
@@ -62,17 +62,19 @@ else
     private const int DefaultTarget = 20;
 
     private ElementReference fillUpToInput;
+    private IReadOnlyList<Product> products = [];
     private int? fillUpTo = DefaultTarget;
     private IReadOnlyList<ReorderLine> lines = [];
     private long totalCents;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         // Prerendering starts the page twice. The log shows both.
         Logger.LogInformation(
             "Reorder started: renderer {Renderer}, interactive {On}",
             RendererInfo.Name, RendererInfo.IsInteractive);
 
+        products = await Catalog.GetAllAsync();
         CreatePlan();
     }
 
@@ -90,7 +92,7 @@ else
     {
         // An empty box binds as null, which means "no target".
         var target = Math.Clamp(fillUpTo ?? 0, 0, 500);
-        lines = ReorderPlanner.CreatePlan(SampleProducts.All, target);
+        lines = ReorderPlanner.CreatePlan(products, target);
         totalCents = lines.Sum(l => l.CostCents);
     }
 }
