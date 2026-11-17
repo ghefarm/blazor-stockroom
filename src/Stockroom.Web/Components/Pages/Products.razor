@@ -1,4 +1,5 @@
 @page "/products"
+@attribute [Authorize(Roles = Roles.StockAreasOrAdmin)]
 @rendermode InteractiveServer
 @inject ProductCatalog Catalog
 @inject NavigationManager Navigation

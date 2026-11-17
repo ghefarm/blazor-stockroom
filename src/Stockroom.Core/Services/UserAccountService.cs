@@ -13,28 +13,32 @@ public class UserAccountService(
     UserManager<ApplicationUser> users,
     IDbContextFactory<StockroomDbContext> factory)
 {
-    public async Task<IReadOnlyList<AccountSummary>> ListAsync(
+    public Task<IReadOnlyList<AccountSummary>> ListAsync(
+        CancellationToken ct = default) => QueryAsync(null, ct);
+
+    /// <summary>
+    /// All accounts for an administrator, only the own account for
+    /// everybody else.
+    /// </summary>
+    public Task<IReadOnlyList<AccountSummary>> ListVisibleAsync(
+        AccountViewer viewer, CancellationToken ct = default) =>
+        QueryAsync(viewer.IsAdmin ? null : viewer.UserId, ct);
+
+    public async Task<AccountSummary?> FindAsync(
+        string userId, AccountViewer viewer,
         CancellationToken ct = default)
     {
-        await using var db = await factory.CreateDbContextAsync(ct);
-        var accounts = await db.Users.AsNoTracking()
-            .OrderBy(u => u.UserName)
-            .ToListAsync(ct);
-        var roles = await (
-            from ur in db.UserRoles
-            join r in db.Roles on ur.RoleId equals r.Id
-            select new { ur.UserId, r.Name }).ToListAsync(ct);
+        // The page already sends such a user to the own account. A
+        // call that still arrives here is a programming error.
+        if (!viewer.IsAdmin && userId != viewer.UserId)
+        {
+            throw new InvalidOperationException(
+                "Only an administrator may read another account.");
+        }
 
-        return [.. accounts.Select(u => new AccountSummary(
-            u.Id,
-            u.UserName ?? "",
-            u.DisplayName,
-            [.. roles.Where(r => r.UserId == u.Id)
-                .Select(r => r.Name!).Order()],
-            u.MustChangePassword,
-            u.IsArchived))];
+        var found = await QueryAsync(userId, ct);
+        return found.SingleOrDefault();
     }
-
     public static IReadOnlyList<string> NormalizeRoles(
         IEnumerable<string> roles)
     {
@@ -165,6 +169,31 @@ public class UserAccountService(
 
         var admins = await users.GetUsersInRoleAsync(Roles.Admin);
         return admins.Count(a => !a.IsArchived) <= 1;
+    }
+
+    private async Task<IReadOnlyList<AccountSummary>> QueryAsync(
+        string? onlyUserId, CancellationToken ct)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+        var accounts = await db.Users.AsNoTracking()
+            .Where(u => onlyUserId == null || u.Id == onlyUserId)
+            .OrderBy(u => u.UserName)
+            .ToListAsync(ct);
+        var ids = accounts.Select(u => u.Id).ToList();
+        var roles = await (
+            from ur in db.UserRoles
+            join r in db.Roles on ur.RoleId equals r.Id
+            where ids.Contains(ur.UserId)
+            select new { ur.UserId, r.Name }).ToListAsync(ct);
+
+        return [.. accounts.Select(u => new AccountSummary(
+            u.Id,
+            u.UserName ?? "",
+            u.DisplayName,
+            [.. roles.Where(r => r.UserId == u.Id)
+                .Select(r => r.Name!).Order()],
+            u.MustChangePassword,
+            u.IsArchived))];
     }
 
     private static AccountResult Fail(IdentityResult result) =>

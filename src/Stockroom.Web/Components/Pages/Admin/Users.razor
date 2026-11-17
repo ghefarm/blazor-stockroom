@@ -36,11 +36,19 @@
             @foreach (var account in accounts)
             {
                 <tr class="@RowClass(account)">
-                    <td>@account.UserName</td>
+                    <td>
+                        <a href="users/@account.Id">
+                            @account.UserName
+                        </a>
+                    </td>
                     <td>@account.DisplayName</td>
                     <td>@string.Join(", ", account.Roles)</td>
                     <td>@DescribeState(account)</td>
                     <td>
+                        @* The page is for administrators already. The
+                           column stays protected if that changes. *@
+                        <AuthorizeView Roles="@Roles.Admin"
+                                       Context="auth">
                         @if (!account.IsArchived)
                         {
                             <button type="submit" name="ResetId"
@@ -54,6 +62,7 @@
                                 Archive
                             </button>
                         }
+                        </AuthorizeView>
                     </td>
                 </tr>
             }

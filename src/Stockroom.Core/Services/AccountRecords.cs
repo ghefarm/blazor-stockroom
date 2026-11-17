@@ -27,3 +27,9 @@ public sealed record AccountResult(
     public static AccountResult Fail(params string[] errors) =>
         new(false, errors, null);
 }
+
+/// <summary>
+/// Who is asking. Built from the signed-in user, never from a value
+/// that the request carries.
+/// </summary>
+public sealed record AccountViewer(string UserId, bool IsAdmin);

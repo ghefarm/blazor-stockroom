@@ -1,0 +1,55 @@
+@page "/users/{UserId}"
+@attribute [Authorize]
+@using Stockroom.Web.Identity
+@inject UserAccountService Accounts
+@inject NavigationManager Navigation
+
+<PageTitle>Account</PageTitle>
+
+@if (account is not null)
+{
+    <h1>@account.DisplayName</h1>
+    <dl>
+        <dt>User name</dt>
+        <dd>@account.UserName</dd>
+        <dt>Roles</dt>
+        <dd>@(account.Roles.Count == 0
+            ? "none" : string.Join(", ", account.Roles))</dd>
+    </dl>
+
+    @if (account.Id == viewer?.UserId)
+    {
+        <p><a href="Account/Manage">Password and sign-in</a></p>
+    }
+}
+
+@code {
+    private AccountViewer? viewer;
+    private AccountSummary? account;
+
+    [Parameter]
+    public string UserId { get; set; } = "";
+
+    // A static page: the user comes from the HttpContext.
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        viewer = HttpContext.User.ToViewer();
+
+        // Comfort: somebody who is no administrator lands on the
+        // own account. The service would refuse the other one.
+        if (!viewer.IsAdmin && UserId != viewer.UserId)
+        {
+            Navigation.NavigateTo($"users/{viewer.UserId}");
+            return;
+        }
+
+        account = await Accounts.FindAsync(UserId, viewer);
+        if (account is null)
+        {
+            Navigation.NotFound();
+        }
+    }
+}

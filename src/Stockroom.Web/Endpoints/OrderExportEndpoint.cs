@@ -1,4 +1,6 @@
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
+using Stockroom.Core;
 using Stockroom.Core.Services;
 
 namespace Stockroom.Web.Endpoints;
@@ -7,7 +9,12 @@ public static class OrderExportEndpoint
 {
     public static void MapOrderExport(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/orders/export", ExportAsync);
+        // The same roles as the page /orders that links here.
+        app.MapGet("/orders/export", ExportAsync)
+            .RequireAuthorization(new AuthorizeAttribute
+            {
+                Roles = Roles.PurchasingOrAdmin,
+            });
     }
 
     private static async Task<IResult> ExportAsync(

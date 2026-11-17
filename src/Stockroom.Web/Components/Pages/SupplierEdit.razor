@@ -1,5 +1,6 @@
 @page "/suppliers/new"
 @page "/suppliers/{Id:int}/edit"
+@attribute [Authorize(Roles = Roles.PurchasingOrAdmin)]
 @inject SupplierDirectory Suppliers
 @inject NavigationManager Navigation
 

@@ -11,6 +11,13 @@ public static class Roles
     public const string Warehouse = "Warehouse";
     public const string Reports = "Reports";
 
+    // For [Authorize(Roles = ...)], AuthorizeView and endpoints. A
+    // comma means "any of these". The administrator is always in.
+    public const string PurchasingOrAdmin = Purchasing + "," + Admin;
+
+    public const string StockAreasOrAdmin =
+        Warehouse + "," + Purchasing + "," + Admin;
+
     public static IReadOnlyList<string> All { get; } =
         [Admin, Purchasing, Warehouse, Reports];
 }

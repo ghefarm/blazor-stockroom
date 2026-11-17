@@ -1,3 +1,4 @@
+@using System.Security.Claims
 @inject NavigationManager Navigation
 
 <div class="top-row ps-3 navbar navbar-dark">
@@ -20,31 +21,48 @@
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="products">
-                <span class="bi bi-list-nested-nav-menu"
-                      aria-hidden="true"></span> Products
-            </NavLink>
-        </div>
+        @* Comfort only: the pages protect themselves. *@
+        <AuthorizeView Roles="@Roles.StockAreasOrAdmin">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="products">
+                    <span class="bi bi-list-nested-nav-menu"
+                          aria-hidden="true"></span> Products
+                </NavLink>
+            </div>
+        </AuthorizeView>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="suppliers">
-                <span class="bi bi-list-nested-nav-menu"
-                      aria-hidden="true"></span> Suppliers
-            </NavLink>
-        </div>
+        <AuthorizeView Roles="@Roles.PurchasingOrAdmin">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="suppliers">
+                    <span class="bi bi-list-nested-nav-menu"
+                          aria-hidden="true"></span> Suppliers
+                </NavLink>
+            </div>
+        </AuthorizeView>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="orders">
-                <span class="bi bi-list-nested-nav-menu"
-                      aria-hidden="true"></span> Orders
-            </NavLink>
-        </div>
+        <AuthorizeView Roles="@Roles.PurchasingOrAdmin">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="orders">
+                    <span class="bi bi-list-nested-nav-menu"
+                          aria-hidden="true"></span> Orders
+                </NavLink>
+            </div>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="@Roles.Admin">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="admin/users">
+                    <span class="bi bi-lock-nav-menu"
+                          aria-hidden="true"></span> Users
+                </NavLink>
+            </div>
+        </AuthorizeView>
 
         <AuthorizeView>
             <Authorized>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Manage">
+                    <NavLink class="nav-link"
+                             href="@($"users/{UserId(context)}")">
                         <span class="bi bi-person-fill-nav-menu"
                               aria-hidden="true"></span>
                         @context.User.Identity?.Name
@@ -77,6 +95,9 @@
 
 @code {
     private string? currentUrl;
+
+    private static string? UserId(AuthenticationState state) =>
+        state.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
     // The menu is static: it renders again for every page.
     protected override void OnInitialized()

@@ -1,4 +1,5 @@
 @page "/"
+@attribute [Authorize]
 @inject ProductCatalog Catalog
 @inject PurchaseOrderService Orders
 
@@ -9,25 +10,31 @@
 <p>Stockroom keeps track of products, suppliers and orders.</p>
 
 <div class="tile-grid">
-    <Tile Title="Products">
-        <ChildContent>@products.Count</ChildContent>
-        <Footer><a href="products">Open the list</a></Footer>
-    </Tile>
-
-    @foreach (var level in levels)
-    {
-        <Tile Title="@StockText.Describe(level)">
-            <ChildContent>@CountAt(level)</ChildContent>
-            <Footer>
-                <a href="@StockQuery.CreateLink(level)">Show them</a>
-            </Footer>
+    <AuthorizeView Roles="@Roles.StockAreasOrAdmin">
+        <Tile Title="Products">
+            <ChildContent>@products.Count</ChildContent>
+            <Footer><a href="products">Open the list</a></Footer>
         </Tile>
-    }
 
-    <Tile Title="Open orders">
-        <ChildContent>@openOrders</ChildContent>
-        <Footer><a href="orders">Show the orders</a></Footer>
-    </Tile>
+        @foreach (var level in levels)
+        {
+            <Tile Title="@StockText.Describe(level)">
+                <ChildContent>@CountAt(level)</ChildContent>
+                <Footer>
+                    <a href="@StockQuery.CreateLink(level)">
+                        Show them
+                    </a>
+                </Footer>
+            </Tile>
+        }
+    </AuthorizeView>
+
+    <AuthorizeView Roles="@Roles.PurchasingOrAdmin">
+        <Tile Title="Open orders">
+            <ChildContent>@openOrders</ChildContent>
+            <Footer><a href="orders">Show the orders</a></Footer>
+        </Tile>
+    </AuthorizeView>
 </div>
 
 @code {

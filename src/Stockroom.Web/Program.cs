@@ -47,5 +47,6 @@ app.MapOrderExport();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.MapAdditionalIdentityEndpoints();
+app.MapStockroomApi();
 
 app.Run();

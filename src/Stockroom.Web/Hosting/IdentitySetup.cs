@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Stockroom.Core.Data;
@@ -28,6 +30,20 @@ public static class IdentitySetup
             })
             .AddIdentityCookies();
 
+        services.ConfigureApplicationCookie(options =>
+        {
+            // Keep the built-in handlers: they do more than redirect.
+            var toLogin = options.Events.OnRedirectToLogin;
+            var toDenied = options.Events.OnRedirectToAccessDenied;
+
+            options.Events.OnRedirectToLogin = context =>
+                AnswerApi(context, StatusCodes.Status401Unauthorized)
+                    ?? toLogin(context);
+            options.Events.OnRedirectToAccessDenied = context =>
+                AnswerApi(context, StatusCodes.Status403Forbidden)
+                    ?? toDenied(context);
+        });
+
         // Identity uses the scoped context that AddDbContextFactory
         // registered (chapter 10).
         services.AddIdentityCore<ApplicationUser>(AccountRules.Apply)
@@ -39,6 +55,21 @@ public static class IdentitySetup
 
         services.AddScoped<UserAccountService>();
         services.AddScoped<AccountSetup>();
+    }
+
+    // A program that calls /api wants a status code, not the HTML
+    // of the sign-in page.
+    private static Task? AnswerApi(
+        RedirectContext<CookieAuthenticationOptions> context,
+        int statusCode)
+    {
+        if (!context.Request.Path.StartsWithSegments("/api"))
+        {
+            return null;
+        }
+
+        context.Response.StatusCode = statusCode;
+        return Task.CompletedTask;
     }
 
     public static async Task EnsureAccountsAsync(
