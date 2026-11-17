@@ -26,6 +26,7 @@ builder.Services.AddScoped<ProductCatalog>();
 builder.Services.AddScoped<SupplierDirectory>();
 builder.Services.AddScoped<PurchaseOrderService>();
 builder.Services.AddScoped<OrderListService>();
+builder.Services.AddScoped<OrderActivity>();
 
 var archiveFolder = Path.GetFullPath(
     builder.Configuration["Imports:ArchiveFolder"]

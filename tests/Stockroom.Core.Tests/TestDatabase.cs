@@ -21,8 +21,8 @@ public sealed class TestDatabase : IAsyncDisposable
     // The Identity tables depend on the schema version in the
     // Identity options. Without them, the model has version 1 and
     // no longer matches the migrations.
-    private static readonly IServiceProvider IdentityOptionsProvider =
-        new ServiceCollection()
+    internal static readonly IServiceProvider
+        IdentityOptionsProvider = new ServiceCollection()
             .Configure<IdentityOptions>(AccountRules.Apply)
             .BuildServiceProvider();
 
