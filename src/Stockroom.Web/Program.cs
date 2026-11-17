@@ -1,3 +1,4 @@
+using Stockroom.Core;
 using Stockroom.Core.Services;
 using Stockroom.Web.Components;
 using Stockroom.Web.Endpoints;
@@ -12,6 +13,9 @@ builder.Services.AddRazorComponents()
 
 // Lets EditForm validate the rows of a list, not only the top level.
 builder.Services.AddValidation();
+
+// Every "today" in Stockroom is a day in this time zone.
+builder.Services.AddBusinessClock("America/Chicago");
 
 builder.AddStockroomAuditing();
 

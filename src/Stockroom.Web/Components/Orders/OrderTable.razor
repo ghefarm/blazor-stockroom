@@ -14,7 +14,7 @@
             <tr>
                 <td>@order.OrderNumber</td>
                 <td>@order.SupplierName</td>
-                <td>@order.OrderedOn.ToString("yyyy-MM-dd")</td>
+                <td>@BusinessFormats.FormatDate(order.OrderedOn)</td>
                 <td>@order.Status</td>
                 <td class="text-end">
                     @Money.Format(order.TotalCents)

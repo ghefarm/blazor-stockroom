@@ -1,3 +1,5 @@
+@inject BusinessClock Clock
+
 <p class="text-muted small">
     Created @Format(Item.CreatedAt) by @Item.CreatedBy.
     @if (Item.LastModifiedAt is { } changedAt)
@@ -13,7 +15,11 @@
     [Parameter, EditorRequired]
     public IAuditable Item { get; set; } = default!;
 
-    // Stored in UTC. Chapter 15 shows it in the business time zone.
-    private static string Format(DateTime utc) =>
-        utc.ToString("yyyy-MM-dd HH:mm") + " UTC";
+    // Stored as UTC, but read back with Kind Unspecified.
+    private string Format(DateTime utc)
+    {
+        var time = TimeZoneInfo.ConvertTimeFromUtc(
+            DateTime.SpecifyKind(utc, DateTimeKind.Utc), Clock.Zone);
+        return BusinessFormats.FormatDateTime(time);
+    }
 }

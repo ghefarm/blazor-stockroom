@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Stockroom.Core.Auditing;
 using Stockroom.Web.Auditing;
 
@@ -10,7 +11,7 @@ public static class AuditSetup
         this WebApplicationBuilder builder)
     {
         var services = builder.Services;
-        services.AddSingleton(TimeProvider.System);
+        services.TryAddSingleton(TimeProvider.System);
         services.AddHttpContextAccessor();
         services.AddSingleton<CircuitUserAccessor>();
         services.AddScoped<CircuitHandler, CircuitUserHandler>();
