@@ -23,7 +23,7 @@ public class AuditTests
         var catalog = database.CreateCatalog();
 
         var id = await AddProductAsync(database);
-        await catalog.ChangePriceAsync(id, 500);
+        await catalog.ChangePriceAsync(id, 500, 0);
         var product = await catalog.FindByIdAsync(id);
 
         using (Assert.EnterMultipleScope())

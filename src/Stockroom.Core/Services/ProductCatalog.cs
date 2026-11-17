@@ -48,21 +48,36 @@ public class ProductCatalog(
             .FirstOrDefaultAsync(p => p.Id == id, ct);
     }
 
-    public async Task<bool> ChangePriceAsync(
-        int id, long priceCents, CancellationToken ct = default)
+    public async Task<SaveOutcome> ChangePriceAsync(
+        int id, long priceCents, int version,
+        CancellationToken ct = default)
     {
         await using var db = await factory.CreateDbContextAsync(ct);
         var product = await db.Products
             .FirstOrDefaultAsync(p => p.Id == id, ct);
         if (product is null)
         {
-            return false;
+            return SaveOutcome.NotFound;
         }
 
+        // The version the user saw, not the one just loaded, so a
+        // change since the form opened makes the UPDATE miss.
+        db.Entry(product).Property(p => p.Version).OriginalValue =
+            version;
+        product.Version = version + 1;
         product.PriceCents = priceCents;
-        await db.SaveChangesAsync(ct);
+
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return SaveOutcome.Conflict;
+        }
+
         await summaries.InvalidateAsync();
-        return true;
+        return SaveOutcome.Saved;
     }
 
     public async Task<bool> ChangeStockQuantityAsync(
@@ -77,6 +92,9 @@ public class ProductCatalog(
         }
 
         product.StockQuantity = quantity;
+
+        // Every write adds 1, so an open price form learns of it.
+        product.Version++;
         await db.SaveChangesAsync(ct);
         await summaries.InvalidateAsync();
         return true;
@@ -94,6 +112,7 @@ public class ProductCatalog(
         }
 
         product.Name = name.Trim();
+        product.Version++;
         await db.SaveChangesAsync(ct);
         await summaries.InvalidateAsync();
         return true;
@@ -108,6 +127,23 @@ public class ProductCatalog(
         await db.SaveChangesAsync(ct);
         await summaries.InvalidateAsync();
         return result;
+    }
+
+    public async Task<int> DeactivateAsync(
+        IReadOnlyList<string> skus, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+
+        // No change tracker here: the version must be set by hand,
+        // or an open form would overwrite this change unnoticed.
+        var changed = await db.Products
+            .Where(p => skus.Contains(p.Sku) && p.IsActive)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(p => p.IsActive, false)
+                .SetProperty(p => p.Version, p => p.Version + 1),
+                ct);
+        await summaries.InvalidateAsync();
+        return changed;
     }
 
     /// <summary>
@@ -136,6 +172,7 @@ public class ProductCatalog(
             }
 
             product.PriceCents = change.PriceCents;
+            product.Version++;
             changed++;
         }
 

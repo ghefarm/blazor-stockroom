@@ -12,6 +12,9 @@ public class Product : IAuditable
     // database agree on what a new product is.
     public bool IsActive { get; set; } = true;
 
+    // Every write adds 1. A save that expects an older value fails.
+    public int Version { get; set; }
+
     public DateTime CreatedAt { get; set; }
     public string CreatedBy { get; set; } = "";
     public DateTime? LastModifiedAt { get; set; }

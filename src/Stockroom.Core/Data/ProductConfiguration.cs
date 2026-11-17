@@ -17,5 +17,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         // For rows that EF Core does not write: SQL scripts, and
         // existing rows when a later migration adds a column.
         product.Property(p => p.IsActive).HasDefaultValue(true);
+
+        // Part of the WHERE clause of every UPDATE and DELETE.
+        product.Property(p => p.Version).IsConcurrencyToken();
     }
 }

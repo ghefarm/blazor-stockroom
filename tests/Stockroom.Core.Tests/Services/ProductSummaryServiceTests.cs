@@ -53,7 +53,8 @@ public class ProductSummaryServiceTests
         await catalog.ChangeStockQuantityAsync(PalletJack, 13);
         var afterCount =
             await summaries.SummarizeAsync(StockLevel.Low);
-        await catalog.ChangePriceAsync(PalletJack, 36900);
+        // Version 1: the new quantity added 1 (chapter 24).
+        await catalog.ChangePriceAsync(PalletJack, 36900, 1);
         var afterPrice = await summaries.SummarizeAsync(null);
 
         Assert.That(before.Count, Is.EqualTo(2));

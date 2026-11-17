@@ -9,6 +9,8 @@ public static class ProductNotices
     {
         "counted" => new(NoticeKind.Success,
             "The stock count was saved."),
+        "priced" => new(NoticeKind.Success,
+            "The new price was saved."),
         _ => null,
     };
 }

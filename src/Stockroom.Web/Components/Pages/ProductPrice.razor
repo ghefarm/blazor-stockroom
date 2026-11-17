@@ -1,0 +1,109 @@
+@page "/products/{Id:int}/price"
+@attribute [Authorize(Roles = Roles.PurchasingOrAdmin)]
+@inject ProductCatalog Catalog
+@inject NavigationManager Navigation
+
+@if (product is not null && Input is not null)
+{
+    <PageTitle>Price of @product.Name</PageTitle>
+
+    <h1>Price of @product.Name</h1>
+    <p>Current price: @Money.Format(product.PriceCents)</p>
+    <AuditLine Item="@product" />
+
+    @if (notice is not null)
+    {
+        <Banner Notice="@notice" />
+    }
+
+    <EditForm Model="Input" FormName="price" Enhance
+              OnValidSubmit="SaveAsync">
+        <DataAnnotationsValidator />
+        <input type="hidden" name="Input.Version"
+               value="@Input.Version" />
+
+        <FormCard>
+            <ChildContent>
+                <div class="field">
+                    <label for="price">New price</label>
+                    <InputText id="price" class="form-control"
+                               @bind-Value="Input.Price" />
+                    <ValidationMessage For="() => Input.Price" />
+                </div>
+            </ChildContent>
+            <Actions>
+                <button type="submit" class="btn btn-primary">
+                    Save
+                </button>
+                <a href="products/@product.Id" class="btn btn-link">
+                    Cancel
+                </a>
+            </Actions>
+        </FormCard>
+    </EditForm>
+}
+
+@code {
+    private Product? product;
+    private Notice? notice;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm(FormName = "price")]
+    private PriceInput? Input { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        product = await Catalog.FindByIdAsync(Id);
+
+        if (product is null)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        // Fill the form only on GET. On a POST, Input holds the
+        // price the user typed and the version they saw.
+        Input ??= PriceInput.FromProduct(product);
+    }
+
+    private async Task SaveAsync()
+    {
+        var outcome = await Catalog.ChangePriceAsync(
+            Id, Input!.Cents, Input.Version);
+
+        if (outcome == SaveOutcome.Saved)
+        {
+            Navigation.NavigateTo($"products/{Id}?done=priced");
+        }
+        else if (outcome == SaveOutcome.NotFound)
+        {
+            Navigation.NotFound();
+        }
+        else
+        {
+            await ShowConflictAsync();
+        }
+    }
+
+    private async Task ShowConflictAsync()
+    {
+        product = await Catalog.FindByIdAsync(Id);
+        if (product is null)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        // The user's price stays in the field. The new version lets
+        // the next save overwrite the other change on purpose.
+        Input!.Version = product.Version;
+        notice = new(NoticeKind.Error,
+            "Someone changed this product after you opened "
+            + "the form. The current price is "
+            + Money.Format(product.PriceCents)
+            + ". Your price is still in the field. "
+            + "Save again to keep it.");
+    }
+}
