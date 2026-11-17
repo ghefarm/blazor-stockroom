@@ -11,6 +11,10 @@
                     Version="$(DotNetServicingVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design"
                     Version="$(DotNetServicingVersion)" />
+    <PackageVersion
+      Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"
+      Version="$(DotNetServicingVersion)" />
+    <PackageVersion Include="QRCoder" Version="1.6.0" />
   </ItemGroup>
 
   <ItemGroup Label="Tests">

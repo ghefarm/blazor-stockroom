@@ -2,6 +2,7 @@ using Stockroom.Core.Services;
 using Stockroom.Web.Components;
 using Stockroom.Web.Endpoints;
 using Stockroom.Web.Hosting;
+using Stockroom.Web.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddValidation();
 
 builder.AddStockroomDatabase();
+builder.AddStockroomIdentity();
 builder.Services.AddScoped<ProductCatalog>();
 builder.Services.AddScoped<SupplierDirectory>();
 builder.Services.AddScoped<PurchaseOrderService>();
@@ -21,6 +23,7 @@ builder.Services.AddScoped<OrderListService>();
 var app = builder.Build();
 
 await app.MigrateDatabaseAsync();
+await app.EnsureAccountsAsync();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -35,11 +38,14 @@ app.UseStatusCodePagesWithReExecute(
     "/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
+app.UsePasskeyGate();
 app.UseAntiforgery();
+app.UseMiddleware<PasswordChangeMiddleware>();
 
 app.MapStaticAssets();
 app.MapOrderExport();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+app.MapAdditionalIdentityEndpoints();
 
 app.Run();

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Stockroom.Core.Entities;
 
@@ -5,7 +6,7 @@ namespace Stockroom.Core.Data;
 
 public class StockroomDbContext(
     DbContextOptions<StockroomDbContext> options)
-    : DbContext(options)
+    : IdentityDbContext<ApplicationUser>(options)
 {
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Supplier> Suppliers => Set<Supplier>();
@@ -16,6 +17,10 @@ public class StockroomDbContext(
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // The Identity tables. Their schema version comes from the
+        // Identity options of the application service provider.
+        base.OnModelCreating(modelBuilder);
+
         // Every IEntityTypeConfiguration class in this project.
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(StockroomDbContext).Assembly);

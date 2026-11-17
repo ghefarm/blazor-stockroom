@@ -1,0 +1,16 @@
+namespace Stockroom.Core;
+
+/// <summary>
+/// The role names. Pages, the menu and endpoints all use these
+/// constants, so a typing mistake fails at build time.
+/// </summary>
+public static class Roles
+{
+    public const string Admin = "Admin";
+    public const string Purchasing = "Purchasing";
+    public const string Warehouse = "Warehouse";
+    public const string Reports = "Reports";
+
+    public static IReadOnlyList<string> All { get; } =
+        [Admin, Purchasing, Warehouse, Reports];
+}

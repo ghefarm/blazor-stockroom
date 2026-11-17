@@ -1,0 +1,171 @@
+@page "/admin/users"
+@attribute [Authorize(Roles = Roles.Admin)]
+@inject UserAccountService Accounts
+
+<PageTitle>Users</PageTitle>
+
+<h1>Users</h1>
+
+@if (password is not null)
+{
+    <div class="alert alert-warning" role="alert">
+        The password for <strong>@passwordFor</strong> is
+        <kbd>@password</kbd>. It is shown only now.
+    </div>
+}
+
+@foreach (var error in errors)
+{
+    <div class="alert alert-danger" role="alert">@error</div>
+}
+
+<form method="post" @formname="account-action"
+      @onsubmit="RunActionAsync">
+    <AntiforgeryToken />
+    <table class="table">
+        <thead>
+            <tr>
+                <th>User name</th>
+                <th>Name</th>
+                <th>Roles</th>
+                <th>State</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var account in accounts)
+            {
+                <tr class="@RowClass(account)">
+                    <td>@account.UserName</td>
+                    <td>@account.DisplayName</td>
+                    <td>@string.Join(", ", account.Roles)</td>
+                    <td>@DescribeState(account)</td>
+                    <td>
+                        @if (!account.IsArchived)
+                        {
+                            <button type="submit" name="ResetId"
+                                value="@account.Id"
+                                class="btn btn-sm btn-outline-dark">
+                                New password
+                            </button>
+                            <button type="submit" name="ArchiveId"
+                                value="@account.Id"
+                                class="btn btn-sm btn-outline-danger">
+                                Archive
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</form>
+
+<h2>New user</h2>
+<EditForm Model="Input" FormName="new-user"
+          OnValidSubmit="CreateAsync" class="col-xl-6">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="text-danger" />
+    <div class="mb-3">
+        <label for="user-name" class="form-label">User name</label>
+        <InputText id="user-name" class="form-control"
+                   @bind-Value="Input.UserName" />
+    </div>
+    <div class="mb-3">
+        <label for="display-name" class="form-label">Name</label>
+        <InputText id="display-name" class="form-control"
+                   @bind-Value="Input.DisplayName" />
+    </div>
+    <fieldset class="mb-3">
+        <legend class="form-label">Roles</legend>
+        @foreach (var role in Roles.All)
+        {
+            <div class="form-check">
+                <input type="checkbox" name="SelectedRoles"
+                       value="@role" id="role-@role"
+                       class="form-check-input" />
+                <label for="role-@role" class="form-check-label">
+                    @role
+                </label>
+            </div>
+        }
+    </fieldset>
+    <button type="submit" class="btn btn-primary">Create user</button>
+</EditForm>
+
+@code {
+    private IReadOnlyList<AccountSummary> accounts = [];
+    private IReadOnlyList<string> errors = [];
+    private string? password;
+    private string? passwordFor;
+
+    [SupplyParameterFromForm(FormName = "new-user")]
+    private NewUserInput Input { get; set; } = default!;
+
+    // A plain checkbox list. No ticked box means null (chapter 5).
+    [SupplyParameterFromForm(FormName = "new-user")]
+    private string[]? SelectedRoles { get; set; }
+
+    [SupplyParameterFromForm(FormName = "account-action")]
+    private string? ResetId { get; set; }
+
+    [SupplyParameterFromForm(FormName = "account-action")]
+    private string? ArchiveId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Input ??= new();
+        accounts = await Accounts.ListAsync();
+    }
+
+    // No redirect after these posts: the new password must not
+    // travel in an address, so this response is the only place
+    // that shows it.
+    private async Task CreateAsync()
+    {
+        var result = await Accounts.CreateAsync(new NewAccount(
+            Input.UserName, Input.DisplayName, SelectedRoles ?? []));
+        await ShowAsync(result, Input.UserName);
+        if (result.Succeeded)
+        {
+            Input = new();
+        }
+    }
+
+    private async Task RunActionAsync()
+    {
+        if (ResetId is not null)
+        {
+            var name = FindName(ResetId);
+            await ShowAsync(
+                await Accounts.ResetPasswordAsync(ResetId), name);
+        }
+        else if (ArchiveId is not null)
+        {
+            await ShowAsync(
+                await Accounts.ArchiveAsync(ArchiveId), null);
+        }
+    }
+
+    private async Task ShowAsync(AccountResult result, string? name)
+    {
+        errors = result.Errors;
+        password = result.Password;
+        passwordFor = name;
+        accounts = await Accounts.ListAsync();
+    }
+
+    private string? FindName(string id) =>
+        accounts.FirstOrDefault(a => a.Id == id)?.UserName;
+
+    private static string? RowClass(AccountSummary account) =>
+        account.IsArchived ? "text-muted" : null;
+
+    private static string DescribeState(AccountSummary account) =>
+        account switch
+        {
+            { IsArchived: true } => "Archived",
+            { MustChangePassword: true } => "Must change password",
+            _ => "Active",
+        };
+}
