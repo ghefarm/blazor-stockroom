@@ -1,0 +1,40 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<button type="button" class="btn btn-outline-secondary"
+        @onclick="PrintAsync">
+    Print
+</button>
+
+@code {
+    private IJSObjectReference? module;
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    private async Task PrintAsync()
+    {
+        // Loaded at the first click: most visits never print.
+        module ??= await JS.InvokeAsync<IJSObjectReference>(
+            "import", "./js/print.js");
+
+        await module.InvokeVoidAsync("printPage", Title);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await module.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The browser is gone, and the module with it.
+        }
+    }
+}

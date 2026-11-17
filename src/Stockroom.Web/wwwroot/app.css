@@ -6,6 +6,7 @@
     --color-link: #006bb7;
     --color-border: #d6d5d5;
     --color-muted: #6c757d;
+    --color-notice: #fff3cd;
     --space-1: 4px;
     --space-2: 8px;
     --space-3: 12px;
@@ -82,4 +83,27 @@ h1:focus {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
+}
+
+/* Feedback of the copy script. The script sets the attribute,
+   CSS writes the text, so the button content never changes. */
+button[data-copy-state="copied"]::after {
+    content: " Copied";
+}
+
+button[data-copy-state="selected"]::after {
+    content: " Selected, press Ctrl+C";
+}
+
+.notice {
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    padding: var(--space-2) var(--space-4);
+    margin: var(--space-4) var(--space-6) 0;
+    background: var(--color-notice);
+}
+
+.notice[hidden] {
+    display: none;
 }

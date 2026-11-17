@@ -16,7 +16,13 @@
 
     <dl class="row">
         <dt class="col-sm-3">SKU</dt>
-        <dd class="col-sm-9">@product.Sku</dd>
+        <dd class="col-sm-9">
+            <span id="sku">@product.Sku</span>
+            <button type="button" data-copy="sku"
+                    class="btn btn-sm btn-outline-secondary">
+                Copy
+            </button>
+        </dd>
         <dt class="col-sm-3">Price</dt>
         <dd class="col-sm-9">@Money.Format(product.PriceCents)</dd>
         <dt class="col-sm-3">Stock</dt>
@@ -38,6 +44,10 @@
 
     <p>
         <a href="products/@product.Id/price">Change the price</a>
+    </p>
+
+    <p>
+        <a href="products/@product.Id/edit">Change the name</a>
     </p>
 }
 

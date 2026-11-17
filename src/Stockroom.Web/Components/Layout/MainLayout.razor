@@ -11,6 +11,19 @@
                target="_blank">About</a>
         </div>
 
+        @* Enhanced navigation keeps the content of a data-permanent
+           element, but resets its own attributes. So the script
+           hides the inner element, not this one. *@
+        <div data-permanent>
+            <div class="notice">
+                Stockroom is an example application. All names
+                and numbers in it are invented.
+                <button type="button" class="btn-close"
+                        aria-label="Close" data-close-notice>
+                </button>
+            </div>
+        </div>
+
         <article class="content px-4">
             @Body
         </article>

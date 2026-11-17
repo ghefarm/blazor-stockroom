@@ -12,6 +12,8 @@
 
 <StockTabs Selected="@selected" OnSelect="@SelectLevel" />
 
+<PrintButton Title="@PrintTitle" />
+
 <table class="table">
     <thead>
         <tr>
@@ -35,6 +37,9 @@
     private StockLevel? selected;
     private IReadOnlyList<Product> shown = [];
     private bool loaded;
+
+    private string PrintTitle =>
+        $"Products - {StockText.DescribeFilter(selected)}";
 
     [SupplyParameterFromQuery(Name = StockQuery.Name)]
     private string? Stock { get; set; }

@@ -62,6 +62,22 @@ public class ProductCatalog(
         return true;
     }
 
+    public async Task<bool> ChangeNameAsync(
+        int id, string name, CancellationToken ct = default)
+    {
+        await using var db = await factory.CreateDbContextAsync(ct);
+        var product = await db.Products
+            .FirstOrDefaultAsync(p => p.Id == id, ct);
+        if (product is null)
+        {
+            return false;
+        }
+
+        product.Name = name.Trim();
+        await db.SaveChangesAsync(ct);
+        return true;
+    }
+
     public async Task<BatchResult> ChangePricesAsync(
         IReadOnlyList<PriceChange> changes,
         CancellationToken ct = default)
