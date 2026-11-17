@@ -67,6 +67,7 @@ public sealed class TestDatabase : IAsyncDisposable
             Substitute.For<IDbContextFactory<StockroomDbContext>>();
         factory.CreateDbContextAsync(Arg.Any<CancellationToken>())
             .Returns(_ => CreateContext());
+        factory.CreateDbContext().Returns(_ => CreateContext());
         return factory;
     }
 

@@ -1,0 +1,8 @@
+.running-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-left: 0.5rem;
+    border-radius: 50%;
+    background-color: var(--bs-warning);
+}

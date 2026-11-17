@@ -13,6 +13,8 @@
       Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <PackageReference Include="ClosedXML" />
     <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
+    <PackageReference
+      Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="PDFsharp-MigraDoc" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>

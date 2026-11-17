@@ -1,0 +1,36 @@
+@implements IDisposable
+@inject StockCheckStatus Status
+
+@if (running)
+{
+    <span class="running-dot" title="A stock check is running">
+        <span class="visually-hidden">running</span>
+    </span>
+}
+
+@code {
+    private bool running;
+
+    protected override void OnInitialized()
+    {
+        running = Status.Current.IsRunning;
+        Status.Changed += HandleChanged;
+    }
+
+    // Renders only when "running" changes, not on every percent.
+    private void HandleChanged(StockCheckState state)
+    {
+        if (state.IsRunning == running)
+        {
+            return;
+        }
+
+        _ = InvokeAsync(() =>
+        {
+            running = state.IsRunning;
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose() => Status.Changed -= HandleChanged;
+}

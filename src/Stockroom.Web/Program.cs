@@ -1,5 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using PdfSharp.Fonts;
 using Stockroom.Core;
+using Stockroom.Core.Data;
 using Stockroom.Core.Lifetimes;
 using Stockroom.Core.Services;
 using Stockroom.Web.Components;
@@ -45,6 +47,34 @@ GlobalFontSettings.UseWindowsFontsUnderWindows = true;
 builder.Services.AddSingleton<SingletonMarker>();
 builder.Services.AddScoped<ScopedMarker>();
 builder.Services.AddTransient<TransientMarker>();
+
+// The slow work itself. A singleton, because the coordinator
+// uses it after the circuit that started a run is gone.
+builder.Services.AddSingleton<IStockCheckWork>(
+    services => new StockCheckWork(
+        services.GetRequiredService<
+            IDbContextFactory<StockroomDbContext>>(),
+        TimeSpan.FromSeconds(1.5)));
+
+// Two designs behind the same page. The setting chooses one.
+var useQueue = builder.Configuration
+    .GetValue<bool>("StockCheck:UseQueue");
+if (useQueue)
+{
+    builder.Services.AddStockCheckWorker();
+}
+else
+{
+    builder.Services.AddSingleton<StockCheckStatus>();
+    builder.Services.AddSingleton<IStockCheckRunner>(
+        services => new StockCheckCoordinator(
+            services.GetRequiredService<StockCheckStatus>(),
+            services.GetRequiredService<IStockCheckWork>(),
+            services.GetRequiredService<IHostApplicationLifetime>()
+                .ApplicationStopping,
+            services.GetRequiredService<
+                ILogger<StockCheckCoordinator>>()));
+}
 
 var app = builder.Build();
 
