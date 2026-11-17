@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+    "supplier": {
+      "type": ["string", "null"],
+      "enum": ["Northfield Supply", "Harbor Supply", null]
+    },
+    "status": {
+      "type": ["string", "null"],
+      "enum": ["Open", "PartlyDelivered", null]
+    },
+    "product": { "type": ["string", "null"] }
+  },
+  "required": ["supplier", "status", "product"],
+  "additionalProperties": false
+}

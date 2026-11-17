@@ -1,0 +1,17 @@
+<form class="question-box" @onsubmit="AskAsync">
+    <span class="ai-badge" title="Uses an AI model">AI</span>
+    <input @bind="question" maxlength="200" disabled="@isRunning"
+           placeholder="Ask in plain words" />
+    @if (isRunning)
+    {
+        <button type="button" @onclick="Stop">Stop</button>
+    }
+    else
+    {
+        <button type="submit">Ask</button>
+    }
+</form>
+@if (message is not null)
+{
+    <p class="question-hint">@message</p>
+}

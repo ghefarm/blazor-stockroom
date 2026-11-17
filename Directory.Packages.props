@@ -33,6 +33,20 @@
                     Version="$(DotNetServicingVersion)" />
   </ItemGroup>
 
+  <ItemGroup Label="AI">
+    <!-- Microsoft.Extensions.AI has its own release line, not the
+         servicing version of .NET. -->
+    <PackageVersion Include="Microsoft.Extensions.AI"
+                    Version="10.11.0" />
+    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions"
+                    Version="10.11.0" />
+    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI"
+                    Version="10.11.0" />
+    <PackageVersion
+      Include="Microsoft.Extensions.Logging.Abstractions"
+      Version="$(DotNetServicingVersion)" />
+  </ItemGroup>
+
   <ItemGroup Label="Tests">
     <PackageVersion Include="bunit" Version="2.15.2" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk"

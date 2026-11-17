@@ -19,4 +19,9 @@
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference
+      Include="..\Stockroom.Questions\Stockroom.Questions.csproj" />
+  </ItemGroup>
+
 </Project>

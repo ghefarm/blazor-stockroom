@@ -1,13 +1,15 @@
 using Microsoft.AspNetCore.Components;
 using Stockroom.Core.Entities;
 using Stockroom.Core.Services;
+using Stockroom.Web.Questions;
 
 namespace Stockroom.Web.Components.Pages;
 
 public partial class Orders(
     OrderListService orderList,
     PurchaseOrderService orderService,
-    NavigationManager navigation)
+    NavigationManager navigation,
+    QuestionOptions questions)
     : IDisposable
 {
     private static readonly OrderStatus?[] tabs =
@@ -23,6 +25,10 @@ public partial class Orders(
     private IReadOnlyList<OrderRow> rows = [];
     private string searchText = "";
     private CancellationTokenSource? pause;
+
+    // A new key replaces the question box, so a question that no
+    // longer describes the list disappears.
+    private int questionBoxVersion;
 
     [SupplyParameterFromQuery(Name = OrderListQuery.SupplierName)]
     private string? Supplier { get; set; }
@@ -101,8 +107,19 @@ public partial class Orders(
         list = loaded;
     }
 
-    private Task ChangeFilterAsync(OrderListFilter filter) =>
-        ChangeAsync(filter, 1, list!.PageSize);
+    private Task ChangeFilterAsync(OrderListFilter filter)
+    {
+        questionBoxVersion++;
+        return ChangeAsync(filter, 1, list!.PageSize);
+    }
+
+    // The question only selects. The list loads on the same path as
+    // a manual change, but the question stays in its box.
+    private Task ApplyQuestionAsync(OrderListFilter filter)
+    {
+        searchText = filter.Search ?? "";
+        return ChangeAsync(filter, 1, list!.PageSize);
+    }
 
     private Task SelectStatusAsync(OrderStatus? status) =>
         ChangeFilterAsync(list!.Filter with { Status = status });

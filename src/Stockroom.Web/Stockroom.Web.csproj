@@ -7,6 +7,8 @@
   <ItemGroup>
     <PackageReference Include="QRCoder" />
     <PackageReference Include="Blazor-ApexCharts" />
+    <PackageReference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,6 +8,7 @@ using Stockroom.Web.Components;
 using Stockroom.Web.Endpoints;
 using Stockroom.Web.Hosting;
 using Stockroom.Web.Identity;
+using Stockroom.Web.Questions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,7 @@ builder.Services.AddScoped<OrderActivity>();
 builder.Services.AddHybridCache();
 builder.Services.AddScoped<ProductSummaryService>();
 builder.Services.AddScoped<SubscriptionService>();
+builder.Services.AddOrderQuestions(builder.Configuration);
 
 var archiveFolder = Path.GetFullPath(
     builder.Configuration["Imports:ArchiveFolder"]
