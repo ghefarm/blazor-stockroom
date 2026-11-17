@@ -83,6 +83,20 @@ public class ProductCatalog(
         CancellationToken ct = default)
     {
         await using var db = await factory.CreateDbContextAsync(ct);
+        var result = await ApplyPricesAsync(db, changes, ct);
+        await db.SaveChangesAsync(ct);
+        return result;
+    }
+
+    /// <summary>
+    /// Changes the prices in the context and leaves the save to the
+    /// caller, so a caller can add more rows to the same save.
+    /// </summary>
+    internal static async Task<BatchResult> ApplyPricesAsync(
+        StockroomDbContext db,
+        IReadOnlyList<PriceChange> changes,
+        CancellationToken ct)
+    {
         string[] skus = [.. changes.Select(c => c.Sku)];
 
         // One query for the whole set, not one per row.
@@ -103,7 +117,6 @@ public class ProductCatalog(
             changed++;
         }
 
-        await db.SaveChangesAsync(ct);
         return new BatchResult(changed, changes.Count - changed);
     }
 }

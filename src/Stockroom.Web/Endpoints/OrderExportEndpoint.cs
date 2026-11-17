@@ -1,6 +1,6 @@
-using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Stockroom.Core;
+using Stockroom.Core.Files;
 using Stockroom.Core.Services;
 
 namespace Stockroom.Web.Endpoints;
@@ -31,7 +31,7 @@ public static class OrderExportEndpoint
         }
 
         var rows = await orderList.ExportAsync(filter, ct);
-        var csv = Encoding.UTF8.GetBytes(OrderExport.CreateCsv(rows));
+        var csv = CsvText.EncodeWithBom(OrderExport.CreateCsv(rows));
         return Results.File(
             csv, "text/csv", OrderExport.CreateFileName(filter));
     }

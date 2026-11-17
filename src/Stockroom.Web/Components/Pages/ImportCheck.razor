@@ -1,0 +1,56 @@
+@page "/imports/check"
+@attribute [Authorize(Roles = Roles.PurchasingOrAdmin)]
+@rendermode InteractiveServer
+@using Stockroom.Core.Files
+
+<PageTitle>Check a price list</PageTitle>
+
+<h1>Check a price list</h1>
+
+<p>This page reads a file and shows what an import would do.
+    It changes nothing.</p>
+
+<InputFile OnChange="CheckAsync" accept=".csv"
+           class="form-control" />
+
+@if (message is not null)
+{
+    <div class="alert alert-danger mt-3">@message</div>
+}
+
+@if (content is not null)
+{
+    <p class="mt-3">
+        @content.Changes.Count rows are valid,
+        @content.Errors.Count rows have errors.
+    </p>
+    <ul>
+        @foreach (var error in content.Errors)
+        {
+            <li>@error</li>
+        }
+    </ul>
+}
+
+@code {
+    private PriceListContent? content;
+    private string? message;
+
+    private async Task CheckAsync(InputFileChangeEventArgs e)
+    {
+        content = null;
+        message = null;
+        try
+        {
+            await using var stream = e.File.OpenReadStream(
+                PriceListImporter.MaxBytes);
+            using var memory = new MemoryStream();
+            await stream.CopyToAsync(memory);
+            content = PriceListReader.Read(memory.ToArray());
+        }
+        catch (IOException ex)
+        {
+            message = ex.Message;
+        }
+    }
+}

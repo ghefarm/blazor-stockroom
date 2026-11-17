@@ -1,3 +1,4 @@
+using PdfSharp.Fonts;
 using Stockroom.Core;
 using Stockroom.Core.Services;
 using Stockroom.Web.Components;
@@ -26,6 +27,16 @@ builder.Services.AddScoped<SupplierDirectory>();
 builder.Services.AddScoped<PurchaseOrderService>();
 builder.Services.AddScoped<OrderListService>();
 
+var archiveFolder = Path.GetFullPath(
+    builder.Configuration["Imports:ArchiveFolder"]
+        ?? "App_Data/price-lists",
+    builder.Environment.ContentRootPath);
+builder.Services.AddSingleton(new ImportArchive(archiveFolder));
+builder.Services.AddScoped<PriceListImporter>();
+
+// PDFsharp looks for fonts only where it is told to.
+GlobalFontSettings.UseWindowsFontsUnderWindows = true;
+
 var app = builder.Build();
 
 await app.MigrateDatabaseAsync();
@@ -50,6 +61,7 @@ app.UseMiddleware<PasswordChangeMiddleware>();
 
 app.MapStaticAssets();
 app.MapOrderExport();
+app.MapFileEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.MapAdditionalIdentityEndpoints();

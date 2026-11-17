@@ -17,6 +17,15 @@
     <PackageVersion Include="QRCoder" Version="1.6.0" />
   </ItemGroup>
 
+  <ItemGroup Label="Files">
+    <!-- Both MIT licensed. -->
+    <PackageVersion Include="ClosedXML" Version="0.105.0" />
+    <PackageVersion Include="PDFsharp-MigraDoc" Version="6.2.4" />
+    <!-- PDFsharp brings 8.0.1, which has known vulnerabilities. -->
+    <PackageVersion Include="System.Security.Cryptography.Pkcs"
+                    Version="$(DotNetServicingVersion)" />
+  </ItemGroup>
+
   <ItemGroup Label="Tests">
     <PackageVersion Include="Microsoft.NET.Test.Sdk"
                     Version="17.14.0" />

@@ -1,0 +1,76 @@
+@page "/imports"
+@attribute [Authorize(Roles = Roles.PurchasingOrAdmin)]
+@inject PriceListImporter Importer
+@inject BusinessClock Clock
+@inject NavigationManager Navigation
+
+<PageTitle>Imports</PageTitle>
+
+<h1>Price list imports</h1>
+
+<form method="post" enctype="multipart/form-data"
+      @formname="price-list" @onsubmit="ImportAsync">
+    <AntiforgeryToken />
+    <div class="mb-3">
+        <label for="file" class="form-label">
+            Price list (CSV with the columns SKU and Price)
+        </label>
+        <input id="file" name="PriceList" type="file"
+               accept=".csv" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Import</button>
+</form>
+
+@if (errors.Count > 0)
+{
+    <div class="alert alert-danger mt-3">
+        <ul class="mb-0">
+            @foreach (var error in errors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    </div>
+}
+else if (Changed is not null)
+{
+    <div class="alert alert-success mt-3">
+        Imported: @Changed changed, @Skipped skipped.
+    </div>
+}
+
+<h2 class="mt-4">Earlier imports</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Imported</th>
+            <th>File</th>
+            <th class="text-end">Rows</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var import in history)
+        {
+            <tr>
+                <td>@FormatMoment(import.ImportedAt)</td>
+                <td>
+                    <a href="imports/@import.Id/file"
+                       data-enhance-nav="false">@import.FileName</a>
+                </td>
+                <td class="text-end">@import.RowCount</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h2 class="mt-4">Exports</h2>
+
+<p>
+    <a href="exports/products.csv" data-enhance-nav="false">CSV</a>,
+    <a href="exports/products.xlsx"
+       data-enhance-nav="false">Excel</a>,
+    <a href="exports/products.pdf" target="_blank">PDF</a>,
+    <a href="exports/price-lists.zip" data-enhance-nav="false">
+        all price lists as ZIP</a>
+</p>

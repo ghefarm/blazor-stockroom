@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using Stockroom.Core.Files;
 
 namespace Stockroom.Core.Services;
 
@@ -15,8 +16,8 @@ public static class OrderExport
         foreach (var row in rows)
         {
             csv.AppendLine(string.Join(",",
-                Quote(row.OrderNumber),
-                Quote(row.SupplierName),
+                Quote(CsvFields.ProtectText(row.OrderNumber)),
+                Quote(CsvFields.ProtectText(row.SupplierName)),
                 OrderListQuery.FormatDate(row.OrderedOn),
                 row.Status,
                 Quote(Money.Format(row.TotalCents))));
