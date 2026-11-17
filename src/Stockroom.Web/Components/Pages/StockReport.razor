@@ -1,0 +1,80 @@
+@page "/reports/stock"
+@attribute [Authorize(Roles = Roles.ReportsOrAdmin)]
+@rendermode InteractiveServer
+@inject ProductCatalog Catalog
+
+<PageTitle>Stock report</PageTitle>
+
+<h1>Stock report</h1>
+
+<div class="report-toolbar">
+    <label>
+        Year
+        <select @bind="year" @bind:after="Calculate">
+            @foreach (var y in SampleStockCounts.Years)
+            {
+                <option value="@y">@y</option>
+            }
+        </select>
+    </label>
+    <label>
+        Chart
+        <select @bind="valueType">
+            <option value="@SeriesType.Line">Line</option>
+            <option value="@SeriesType.Bar">Bars</option>
+        </select>
+    </label>
+    <label>
+        <input type="checkbox" @bind="includeInactive"
+               @bind:after="Calculate" />
+        Include inactive products
+    </label>
+    <label>
+        <input type="checkbox" @bind="compact" />
+        Compact
+    </label>
+    <PrintButton Title="@PrintTitle" Selector=".report" />
+</div>
+
+<div class="report">
+    <section class="report-card">
+        <StockValueChart @key="(year, valueType, compact)"
+                         Months="@months"
+                         Year="@year"
+                         ChartType="@valueType"
+                         Compact="@compact" />
+    </section>
+    <section class="report-card">
+        <StockLevelChart @key="includeInactive"
+                         Levels="@levels"
+                         IncludeInactive="@includeInactive"
+                         Compact="@compact" />
+    </section>
+</div>
+
+@code {
+    private int year = SampleStockCounts.Years[^1];
+    private SeriesType valueType = SeriesType.Line;
+    private bool includeInactive;
+    private bool compact;
+    private IReadOnlyList<MonthValue> months = [];
+    private IReadOnlyList<LevelCount> levels = [];
+    private IReadOnlyList<Product> products = [];
+
+    private string PrintTitle => $"Stock report {year}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await Catalog.GetAllAsync();
+        Calculate();
+    }
+
+    // Runs once per filter change, never during a render.
+    private void Calculate()
+    {
+        months = StockReportCalculator.CalculateMonthlyValues(
+            SampleStockCounts.All, year);
+        levels = StockReportCalculator.CountByLevel(
+            products, includeInactive);
+    }
+}

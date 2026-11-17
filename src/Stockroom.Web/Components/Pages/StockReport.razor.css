@@ -1,0 +1,30 @@
+.report-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.report {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+    gap: 1rem;
+}
+
+.report-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+/* After the screen rules: @media print adds no specificity. */
+@media print {
+    .report-toolbar {
+        display: none;
+    }
+
+    .report-card {
+        break-inside: avoid;
+    }
+}

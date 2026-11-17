@@ -96,3 +96,11 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+/* Last in the file, so it wins over the rules above. */
+@media print {
+    .sidebar,
+    .top-row {
+        display: none;
+    }
+}

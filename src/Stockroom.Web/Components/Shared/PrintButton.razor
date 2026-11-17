@@ -12,13 +12,18 @@
     [Parameter, EditorRequired]
     public string Title { get; set; } = "";
 
+    // The part of the page that goes to paper. The default is the
+    // content area of MainLayout, without menu and top bar.
+    [Parameter]
+    public string Selector { get; set; } = "article";
+
     private async Task PrintAsync()
     {
         // Loaded at the first click: most visits never print.
         module ??= await JS.InvokeAsync<IJSObjectReference>(
             "import", "./js/print.js");
 
-        await module.InvokeVoidAsync("printPage", Title);
+        await module.InvokeVoidAsync("printPage", Title, Selector);
     }
 
     public async ValueTask DisposeAsync()

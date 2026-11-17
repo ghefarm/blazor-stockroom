@@ -15,6 +15,7 @@
       Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"
       Version="$(DotNetServicingVersion)" />
     <PackageVersion Include="QRCoder" Version="1.6.0" />
+    <PackageVersion Include="Blazor-ApexCharts" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup Label="Files">

@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="QRCoder" />
+    <PackageReference Include="Blazor-ApexCharts" />
   </ItemGroup>
 
   <ItemGroup>

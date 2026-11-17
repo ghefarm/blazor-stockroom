@@ -18,6 +18,8 @@ public static class Roles
     public const string StockAreasOrAdmin =
         Warehouse + "," + Purchasing + "," + Admin;
 
+    public const string ReportsOrAdmin = Reports + "," + Admin;
+
     public static IReadOnlyList<string> All { get; } =
         [Admin, Purchasing, Warehouse, Reports];
 }

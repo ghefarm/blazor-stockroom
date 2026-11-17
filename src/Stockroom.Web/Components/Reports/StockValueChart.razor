@@ -1,0 +1,39 @@
+@using System.Globalization
+
+<ApexChart TItem="MonthValue"
+           Options="@options"
+           Height="@(Compact ? 220 : 360)">
+    <ApexPointSeries TItem="MonthValue"
+                     Items="@Months"
+                     Name="Stock value"
+                     SeriesType="@ChartType"
+                     XValue="@(m => FormatMonth(m.Month))"
+                     YValue="@(m => m.ValueCents / 100m)" />
+</ApexChart>
+
+@code {
+    private ApexChartOptions<MonthValue> options = new();
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<MonthValue> Months { get; set; } = [];
+
+    [Parameter]
+    public int Year { get; set; }
+
+    [Parameter]
+    public SeriesType ChartType { get; set; } = SeriesType.Line;
+
+    [Parameter]
+    public bool Compact { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        options = ChartOptions.Create<MonthValue>(
+            "Stock value per month",
+            $"{Year}, last count of each month",
+            $"stock-value-{Year}");
+    }
+
+    private static string FormatMonth(DateOnly month) =>
+        month.ToString("MMM", CultureInfo.InvariantCulture);
+}

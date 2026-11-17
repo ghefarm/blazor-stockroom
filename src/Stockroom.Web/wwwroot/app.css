@@ -107,3 +107,30 @@ button[data-copy-state="selected"]::after {
 .notice[hidden] {
     display: none;
 }
+
+/* A chart with a height of 100 percent takes the height of its
+   parent, so the parent needs a known height. */
+.chart-box {
+    height: 22rem;
+}
+
+.chart-box.compact {
+    height: 14rem;
+}
+
+/* The print window holds a copy of the report and nothing else. */
+.print-window {
+    padding: var(--space-4);
+}
+
+@page {
+    size: landscape;
+}
+
+/* Nobody can click on paper: no buttons, no chart menu. */
+@media print {
+    button,
+    .apexcharts-toolbar {
+        display: none;
+    }
+}
