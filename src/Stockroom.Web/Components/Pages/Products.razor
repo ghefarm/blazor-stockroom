@@ -33,7 +33,10 @@
 </table>
 
 @code {
-    private IReadOnlyList<Product> all = [];
+    // Loaded once while prerendering, then carried into the circuit.
+    [PersistentState]
+    public IReadOnlyList<Product>? All { get; set; }
+
     private StockLevel? selected;
     private IReadOnlyList<Product> shown = [];
     private bool loaded;
@@ -46,7 +49,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        all = await Catalog.GetAllAsync();
+        All ??= await Catalog.GetAllAsync();
     }
 
     protected override void OnParametersSet()
@@ -75,7 +78,7 @@
     private void ApplyFilter(StockLevel? level)
     {
         selected = level;
-        shown = StockRules.FilterByLevel(all, level);
+        shown = StockRules.FilterByLevel(All ?? [], level);
         loaded = true;
     }
 }

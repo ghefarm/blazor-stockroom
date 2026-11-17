@@ -1,0 +1,22 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>SKU</th>
+            <th>Name</th>
+            <th class="text-end">Price</th>
+            <th class="text-end">Quantity</th>
+            <th>Stock</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Products)
+        {
+            <ProductRow @key="@product.Id" Product="@product" />
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<Product> Products { get; set; } = default!;
+}

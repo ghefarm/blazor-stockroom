@@ -1,0 +1,27 @@
+@page "/demo/pause"
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Pause and resume</PageTitle>
+
+<h1>Pause and resume</h1>
+
+<p>Persisted count: <span id="saved">@SavedCount</span></p>
+<p>Plain count: <span id="plain">@plainCount</span></p>
+
+<button class="btn btn-primary" @onclick="IncrementBoth">
+    Add one
+</button>
+
+@code {
+    [PersistentState]
+    public int SavedCount { get; set; }
+
+    private int plainCount;
+
+    private void IncrementBoth()
+    {
+        SavedCount++;
+        plainCount++;
+    }
+}

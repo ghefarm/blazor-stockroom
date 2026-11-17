@@ -1,0 +1,30 @@
+@page "/demo/no-prerender"
+@attribute [Authorize]
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject ProductCatalog Catalog
+@inject ILogger<NoPrerender> Logger
+
+<PageTitle>No prerendering</PageTitle>
+
+<h1>Products</h1>
+
+@if (products is null)
+{
+    <p role="status">Loading products...</p>
+}
+else
+{
+    <ProductTable Products="@products" />
+}
+
+@code {
+    private IReadOnlyList<Product>? products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.LogInformation(
+            "Loading products, renderer {Renderer}",
+            RendererInfo.Name);
+        products = await Catalog.GetAllAsync();
+    }
+}

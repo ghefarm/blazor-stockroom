@@ -1,0 +1,25 @@
+@page "/demo/crash"
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Crash</PageTitle>
+
+<h1>Crash</h1>
+
+<p>Clicks: <span id="clicks">@clicks</span></p>
+
+<button id="count" class="btn btn-primary" @onclick="Count">
+    Count
+</button>
+<button id="crash" class="btn btn-danger" @onclick="Fail">
+    Throw
+</button>
+
+@code {
+    private int clicks;
+
+    private void Count() => clicks++;
+
+    private void Fail() =>
+        throw new InvalidOperationException("Demo failure.");
+}

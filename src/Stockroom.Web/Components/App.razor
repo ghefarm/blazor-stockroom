@@ -20,6 +20,25 @@
 </head>
 
 <body>
+    <div id="old-browser" class="old-browser" hidden>
+        This browser is too old for Stockroom. Please use a current
+        version of Edge, Chrome, Firefox or Safari.
+    </div>
+    <script>
+        // Old syntax on purpose: this check must run in browsers
+        // that cannot run blazor.web.js.
+        (function () {
+            var s = document.createElement("script");
+            var ok = "noModule" in s
+                && typeof window.fetch === "function"
+                && typeof window.WebSocket === "function"
+                && typeof window.HTMLDialogElement === "function";
+            if (!ok) {
+                document.getElementById("old-browser")
+                    .removeAttribute("hidden");
+            }
+        })();
+    </script>
     <Routes />
     <ReconnectModal />
     <script src="@Assets["_framework/blazor.web.js"]"></script>

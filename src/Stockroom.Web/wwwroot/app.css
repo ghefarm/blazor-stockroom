@@ -134,3 +134,10 @@ button[data-copy-state="selected"]::after {
         display: none;
     }
 }
+
+/* Shown by the inline check in App.razor when Blazor cannot run. */
+.old-browser {
+    background: var(--color-notice);
+    border-bottom: 1px solid #997404;
+    padding: var(--space-3) var(--space-5);
+}

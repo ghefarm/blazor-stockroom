@@ -1,0 +1,31 @@
+@page "/demo/persisted"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject ProductCatalog Catalog
+@inject ILogger<Persisted> Logger
+
+<PageTitle>Persisted</PageTitle>
+
+<h1>Products</h1>
+
+@if (Products is null)
+{
+    <p role="status">Loading products...</p>
+}
+else
+{
+    <ProductTable Products="@Products" />
+}
+
+@code {
+    [PersistentState]
+    public IReadOnlyList<Product>? Products { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.LogInformation(
+            "Initializing, renderer {Renderer}, restored {Restored}",
+            RendererInfo.Name, Products is not null);
+        Products ??= await Catalog.GetAllAsync();
+    }
+}

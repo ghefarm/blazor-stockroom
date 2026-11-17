@@ -1,0 +1,30 @@
+@page "/demo/double-load"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject ProductCatalog Catalog
+@inject ILogger<DoubleLoad> Logger
+
+<PageTitle>Double load</PageTitle>
+
+<h1>Products</h1>
+
+@if (products is null)
+{
+    <p role="status">Loading products...</p>
+}
+else
+{
+    <ProductTable Products="@products" />
+}
+
+@code {
+    private IReadOnlyList<Product>? products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.LogInformation(
+            "Loading products, renderer {Renderer}",
+            RendererInfo.Name);
+        products = await Catalog.GetAllAsync();
+    }
+}
