@@ -17,4 +17,17 @@ public static class BusinessClockServiceCollectionExtensions
             sp.GetRequiredService<TimeProvider>(), zone));
         return services;
     }
+
+    // For an id that only the container knows, such as a validated
+    // option. The options check it at startup, not this method.
+    public static IServiceCollection AddBusinessClock(
+        this IServiceCollection services,
+        Func<IServiceProvider, string> getTimeZoneId)
+    {
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton(sp => new BusinessClock(
+            sp.GetRequiredService<TimeProvider>(),
+            TimeZoneInfo.FindSystemTimeZoneById(getTimeZoneId(sp))));
+        return services;
+    }
 }

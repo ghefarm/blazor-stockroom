@@ -1,0 +1,10 @@
+@page "/maintenance"
+@using Microsoft.Extensions.Options
+@using Stockroom.Web.Maintenance
+@inject IOptions<MaintenanceOptions> Options
+
+<PageTitle>Maintenance</PageTitle>
+
+<h1>Maintenance</h1>
+
+<p>@Options.Value.Message</p>

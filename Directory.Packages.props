@@ -22,6 +22,7 @@
     <!-- Not in the servicing train of the framework packages. -->
     <PackageVersion Include="Microsoft.Extensions.Caching.Hybrid"
                     Version="10.11.0" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup Label="Files">

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Identity;
 using Stockroom.Core.Entities;
+using Stockroom.Web.Maintenance;
 
 namespace Stockroom.Web.Identity;
 
@@ -34,10 +35,15 @@ public sealed class PasswordChangeMiddleware(RequestDelegate next)
     private static bool IsOtherPage(HttpContext context)
     {
         // Only pages. Files, scripts and the posts of the account
-        // endpoints pass, so the page keeps its styles.
+        // endpoints pass, so the page keeps its styles. The
+        // maintenance page passes too, or the two middlewares would
+        // send the user back and forth between their pages.
         var page = context.GetEndpoint()?.Metadata
             .GetMetadata<ComponentTypeMetadata>();
+        var path = context.Request.Path;
         return page is not null
-            && !context.Request.Path.StartsWithSegments(PagePath);
+            && !path.StartsWithSegments(PagePath)
+            && !path.StartsWithSegments(
+                MaintenanceMiddleware.PagePath);
     }
 }
