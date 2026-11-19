@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting.WindowsServices;
 using Microsoft.Extensions.Options;
 using PdfSharp.Fonts;
 using Serilog;
@@ -23,7 +24,15 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    var builder = WebApplication.CreateBuilder(args);
+    var builder = WebApplication.CreateBuilder(
+        new WebApplicationOptions
+        {
+            Args = args,
+            ContentRootPath = WindowsServiceHelpers.IsWindowsService()
+                ? AppContext.BaseDirectory
+                : default
+        });
+    builder.Services.AddWindowsService();
 
     var folders = builder.AddDataFolders();
     builder.AddStockroomDefaults(folders);
@@ -47,7 +56,7 @@ try
 
     builder.AddStockroomAuditing();
 
-    builder.AddStockroomDatabase();
+    builder.AddStockroomDatabase(folders);
     builder.AddStockroomIdentity();
     builder.Services.AddScoped<ProductCatalog>();
     builder.Services.AddScoped<SupplierDirectory>();
@@ -59,9 +68,11 @@ try
     builder.Services.AddScoped<SubscriptionService>();
     builder.Services.AddOrderQuestions(builder.Configuration);
 
+    // In the data folder by default, because an update replaces the
+    // program folder.
     var archiveFolder = Path.GetFullPath(
         builder.Configuration["Imports:ArchiveFolder"]
-            ?? "App_Data/price-lists",
+            ?? Path.Combine(folders.Documents, "price-lists"),
         builder.Environment.ContentRootPath);
     builder.Services.AddSingleton(new ImportArchive(archiveFolder));
     builder.Services.AddScoped<PriceListImporter>();
@@ -142,6 +153,8 @@ try
     app.MapAdditionalIdentityEndpoints();
     app.MapStockroomApi();
 
+    app.Logger.LogInformation("Stockroom started from {Root}",
+        app.Environment.ContentRootPath);
     await app.RunAsync();
     return 0;
 }

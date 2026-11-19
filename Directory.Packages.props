@@ -23,6 +23,9 @@
     <PackageVersion Include="Microsoft.Extensions.Caching.Hybrid"
                     Version="10.11.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageVersion
+      Include="Microsoft.Extensions.Hosting.WindowsServices"
+      Version="$(DotNetServicingVersion)" />
   </ItemGroup>
 
   <ItemGroup Label="Files">
@@ -50,6 +53,8 @@
 
   <ItemGroup Label="Tests">
     <PackageVersion Include="bunit" Version="2.15.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing"
+                    Version="$(DotNetServicingVersion)" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk"
                     Version="17.14.0" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
@@ -59,5 +64,11 @@
     <PackageVersion Include="NUnit" Version="4.3.2" />
     <PackageVersion Include="NUnit.Analyzers" Version="4.7.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Tools">
+    <!-- Only for tools/PsSyntaxCheck, which parses deploy/*.ps1. -->
+    <PackageVersion Include="System.Management.Automation"
+                    Version="7.6.10" />
   </ItemGroup>
 </Project>

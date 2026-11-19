@@ -10,6 +10,8 @@
     <PackageReference Include="Microsoft.Extensions.AI" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
     <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference
+      Include="Microsoft.Extensions.Hosting.WindowsServices" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,6 +19,12 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Holds the password of the development administrator. -->
+    <Content Update="appsettings.Development.json"
+             CopyToPublishDirectory="Never" />
   </ItemGroup>
 
   <PropertyGroup>

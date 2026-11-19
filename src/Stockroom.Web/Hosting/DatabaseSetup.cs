@@ -3,16 +3,16 @@ using Microsoft.EntityFrameworkCore;
 using Stockroom.Core.Auditing;
 using Stockroom.Core.Data;
 using Stockroom.Core.ReadOnly;
+using Stockroom.Core.Storage;
 
 namespace Stockroom.Web.Hosting;
 
 public static class DatabaseSetup
 {
     public static void AddStockroomDatabase(
-        this WebApplicationBuilder builder)
+        this WebApplicationBuilder builder, DataFolders folders)
     {
-        var connection = CreateConnectionString(
-            builder.Configuration, builder.Environment);
+        var connection = CreateConnectionString(folders);
         var withSamples = builder.Environment.IsDevelopment();
 
         builder.Services.AddSingleton<SubscriptionState>();
@@ -36,8 +36,9 @@ public static class DatabaseSetup
     public static async Task MigrateDatabaseAsync(
         this WebApplication app)
     {
-        var connection = CreateConnectionString(
-            app.Configuration, app.Environment);
+        var folders = app.Services.GetRequiredService<DataFolders>();
+        var clock = app.Services.GetRequiredService<TimeProvider>();
+        var connection = CreateConnectionString(folders);
         var options =
             new DbContextOptionsBuilder<StockroomDbContext>();
         var withSamples = app.Environment.IsDevelopment();
@@ -51,11 +52,17 @@ public static class DatabaseSetup
             .AddInterceptors(app.Services
                 .GetRequiredService<AuditInterceptor>());
         await using var db = new StockroomDbContext(options.Options);
+        var pending = await db.Database.GetPendingMigrationsAsync();
 
-        // SQLite creates the database file, but not its folder.
-        var file = new SqliteConnectionStringBuilder(
-            db.Database.GetConnectionString()).DataSource;
-        Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+        // An old version may not work with a migrated database,
+        // so a rollback needs this copy.
+        if (pending.Any() && File.Exists(folders.DatabaseFile))
+        {
+            var copy = SqliteBackup.CreateBackup(folders.DatabaseFile,
+                folders.Backups, clock.GetLocalNow());
+            app.Logger.LogInformation(
+                "Backup before migration: {File}", copy);
+        }
 
         await db.Database.MigrateAsync();
     }
@@ -73,18 +80,12 @@ public static class DatabaseSetup
         }
     }
 
+    // Always an absolute path. SQLite would resolve a relative one
+    // against the working directory.
     private static string CreateConnectionString(
-        IConfiguration configuration, IHostEnvironment environment)
-    {
-        var connection = new SqliteConnectionStringBuilder(
-            configuration.GetConnectionString("Stockroom")
-            ?? throw new InvalidOperationException(
-                "The connection string 'Stockroom' is missing."));
-
-        // SQLite resolves a relative path against the working
-        // directory, which changes with the way the app starts.
-        connection.DataSource = Path.GetFullPath(
-            connection.DataSource, environment.ContentRootPath);
-        return connection.ToString();
-    }
+        DataFolders folders) =>
+        new SqliteConnectionStringBuilder
+        {
+            DataSource = folders.DatabaseFile
+        }.ToString();
 }

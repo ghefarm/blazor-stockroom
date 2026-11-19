@@ -9,7 +9,11 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Stockroom.Core.Tests/Stockroom.Core.Tests.csproj" />
+    <Project Path="tests/Stockroom.Deploy.Tests/Stockroom.Deploy.Tests.csproj" />
     <Project Path="tests/Stockroom.Questions.Tests/Stockroom.Questions.Tests.csproj" />
     <Project Path="tests/Stockroom.Web.Tests/Stockroom.Web.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Stockroom.Deploy/Stockroom.Deploy.csproj" />
   </Folder>
 </Solution>

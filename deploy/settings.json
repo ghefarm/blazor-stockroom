@@ -1,0 +1,17 @@
+{
+  "Kestrel": {
+    "Endpoints": {
+      "Http": {
+        "Url": "http://*:80"
+      },
+      "Https": {
+        "Url": "https://*:443",
+        "Certificate": {
+          "Subject": "Stockroom",
+          "Store": "My",
+          "Location": "LocalMachine"
+        }
+      }
+    }
+  }
+}
